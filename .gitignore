@@ -1,0 +1,36 @@
+# Dependencies and generated output
+node_modules/
+dist/
+build/
+coverage/
+.cache/
+tmp/
+
+# Project archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+/secrets.json
+/config.yaml
+/data/
+
+# Logs
+*.log
+
+# Editors and operating systems
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

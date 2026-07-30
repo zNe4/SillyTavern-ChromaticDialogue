@@ -5,12 +5,13 @@
 
 ## Project status
 
-- Current phase: **Phase 0 — Regex and compatibility spike**
+- Current phase: **Phase 1 — Loadable extension skeleton**
 - Target SillyTavern version: **1.18.0+**
 - Reference installation: **1.18.0-1-g8172dcd0e**
 - First release target: **v0.1.0**
-- Implementation status: **Planning; no extension code written**
-- Next action: Complete the Phase 0 Regex test matrix before scaffolding files.
+- Implementation status: **Regex validated; GitHub repository created; no extension code written**
+- Repository: **https://github.com/zNe4/SillyTavern-ChromaticDialogue**
+- Next action: Populate the repository with the Phase 1 skeleton.
 
 Update this section whenever a phase begins or finishes.
 
@@ -74,7 +75,7 @@ The project is successful when:
 | Area | Decision |
 | --- | --- |
 | Working name | Chromatic Dialogue |
-| Suggested repository | `SillyTavern-ChromaticDialogue` |
+| Repository | `zNe4/SillyTavern-ChromaticDialogue` |
 | Extension type | Browser-side SillyTavern UI extension |
 | Runtime | Native JavaScript ES modules |
 | Framework | None |
@@ -142,6 +143,8 @@ SillyTavern-ChromaticDialogue/
 │   └── panel.js
 ├── docs/
 │   └── regex-setup.md
+├── scripts/
+│   └── archive-project.sh
 ├── README.md
 ├── LICENSE
 └── .gitignore
@@ -162,10 +165,48 @@ SillyTavern-ChromaticDialogue/
 | `src/style-manager.js` | Dedicated generated-style lifecycle |
 | `src/panel.js` | UI rendering, form handling, and user feedback |
 | `docs/regex-setup.md` | Exact built-in Regex configuration |
+| `scripts/archive-project.sh` | Create clean project snapshots for review |
 | `README.md` | Installation, usage, limitations, and troubleshooting |
 
 No `node_modules`, compiled bundle, generated assets, or SillyTavern source files
 should be committed.
+
+### Project snapshot archives
+
+Run:
+
+```bash
+chmod +x scripts/archive-project.sh
+./scripts/archive-project.sh
+```
+
+The script archives Git-tracked files plus untracked files that are not ignored
+by `.gitignore`. This lets snapshots follow the project automatically as files
+are added, without maintaining a hardcoded allowlist.
+
+It excludes:
+
+- `.git` internals;
+- dependencies, caches, build output, and coverage;
+- existing archives;
+- logs and editor swap/backup files;
+- common secret and credential files;
+- SillyTavern `data`, `config.yaml`, and `secrets.json`.
+
+By default, the ZIP is written beside the repository and named with the UTC
+timestamp, current commit, and a `dirty` suffix when appropriate. Keeping the
+archive outside the repository prevents it from including itself.
+
+Useful options:
+
+```bash
+./scripts/archive-project.sh --list
+./scripts/archive-project.sh --tracked-only
+./scripts/archive-project.sh --output ../chromatic-dialogue-review.zip
+```
+
+The script requires `git` and `zip`. If `unzip` is installed, it also verifies
+the resulting archive before reporting success.
 
 ---
 
@@ -189,7 +230,7 @@ server plugin is required for normal installation.
 Expected URL shape:
 
 ```text
-https://github.com/<github-user>/SillyTavern-ChromaticDialogue
+https://github.com/zNe4/SillyTavern-ChromaticDialogue
 ```
 
 ### Repository requirements
@@ -227,12 +268,12 @@ Planned values:
 | `js` | `index.js` |
 | `css` | `style.css` |
 | `version` | `0.1.0` for the first release |
-| `homePage` | Final GitHub repository URL |
+| `homePage` | `https://github.com/zNe4/SillyTavern-ChromaticDialogue` |
 | `auto_update` | `true` |
 | `minimum_client_version` | `1.18.0` |
 
-`author` and the final `homePage` must be filled after the GitHub username and
-repository URL are known.
+The planned `author` value is `zNe4` unless a different public author label is
+chosen before the manifest is created.
 
 ### Updates
 
@@ -514,22 +555,21 @@ Each phase must meet its exit criteria before the next phase begins.
 
 ### Phase 0 — Regex and compatibility spike
 
-Status: **Next**
+Status: **Complete; remaining integration checks are assigned to later phases**
 
 Tasks:
 
-- [ ] Create the candidate global Regex script manually.
-- [ ] Test the expression in Regex Test Mode.
-- [ ] Verify actual chat rendering.
-- [ ] Confirm raw markers remain in stored chat content.
-- [ ] Confirm Alter Outgoing Prompt is disabled and markers remain in prompts.
-- [ ] Verify the output `<span>` survives sanitization.
-- [ ] Confirm `.mes_text` or determine the actual message-content selector.
-- [ ] Test multiline dialogue.
-- [ ] Test two or more markers in one AI message.
-- [ ] Test edit/run-on-edit behavior.
-- [ ] Observe streaming behavior before the closing marker arrives.
-- [ ] Record any behavior difference on mobile.
+- [x] Create the candidate global Regex script manually.
+- [x] Test the expression in Regex Test Mode.
+- [x] Verify actual chat rendering.
+- [x] Verify the output `<span>` survives sanitization during normal rendering.
+
+Carried forward:
+
+- Confirm raw-marker storage and outgoing-prompt behavior during Phase 6.
+- Confirm `.mes_text` or the actual message-content selector during Phase 3.
+- Test multiline, multiple-marker, edit, and streaming behavior during Phase 6.
+- Record mobile differences during Phase 6.
 
 Test inputs:
 
@@ -562,9 +602,9 @@ Malformed inputs:
 Exit criteria:
 
 - The Regex contract is proven independently of the extension.
-- The final find/replace values and settings are recorded in
-  `docs/regex-setup.md`.
-- The production chat-content selector is known.
+- The working find/replace values and settings are recorded in this roadmap.
+- Creation of the final `docs/regex-setup.md` is assigned to Phase 1.
+- Remaining integration checks have explicit later owners.
 
 Suggested commit after documentation exists:
 
@@ -576,12 +616,13 @@ docs: define regex display contract
 
 Tasks:
 
-- [ ] Create the Git repository.
-- [ ] Select the final GitHub repository name.
+- [x] Create the Git repository.
+- [x] Select the final GitHub repository name.
 - [ ] Add license.
 - [ ] Create valid `manifest.json`.
 - [ ] Create `index.js`, `settings.html`, and `style.css`.
 - [ ] Add `global.d.ts` for Neovim LSP support.
+- [ ] Add and validate `scripts/archive-project.sh`.
 - [ ] Register an idempotent initialization path.
 - [ ] Render an empty Chromatic Dialogue settings panel.
 - [ ] Show no-chat and no-assignment states.
@@ -934,6 +975,8 @@ Recommended lightweight workflow:
 - Use tags for public versions.
 - Do not commit SillyTavern itself into the extension repository.
 - Do not commit user data, chats, character cards, settings, secrets, or logs.
+- Create a clean ZIP snapshot with `scripts/archive-project.sh` whenever the
+  current project state needs to be uploaded for review.
 
 Suggested commit sequence:
 
@@ -979,6 +1022,8 @@ The project is not complete merely because the UI appears to work once.
 | 2026-07-30 | Use Extensions settings panel first | Documented and less fragile than a custom toolbar hook |
 | 2026-07-30 | Defer AI proposals | Correct persistence and outgoing-prompt behavior require a proven core |
 | 2026-07-30 | Support direct GitHub installation | SillyTavern can clone and load a valid extension repository automatically |
+| 2026-07-30 | Build snapshots from Git state | Automatically includes new project files while respecting `.gitignore` and explicit safety exclusions |
+| 2026-07-30 | Use `zNe4/SillyTavern-ChromaticDialogue` | The public GitHub project identity has been created |
 
 ---
 
@@ -988,21 +1033,21 @@ Resolve before the indicated milestone:
 
 ### Before Phase 1
 
-- [ ] Final GitHub username/organization.
-- [ ] Final repository name.
-- [ ] Manifest author value.
+- [x] Final GitHub username/organization: `zNe4`.
+- [x] Final repository name: `SillyTavern-ChromaticDialogue`.
+- [ ] Confirm manifest author value; planned value is `zNe4`.
 - [ ] License choice. AGPL-3.0 is the default recommendation if unsure.
 - [ ] Confirm whether desktop development uses the user-scoped or all-users
       extension location.
 
-### During Phase 0
+### Before Phase 3
 
-- [ ] Final Regex expression.
 - [ ] Final chat-content CSS selector.
-- [ ] Whether Max Depth `50` is the best mobile default.
-- [ ] Exact streaming behavior.
 
 ### Before v0.1.0
+
+- [ ] Whether Max Depth `50` is the best mobile default.
+- [ ] Exact streaming behavior.
 
 - [ ] Whether to support only `1.18.0+` or test older releases.
 - [ ] Whether a GitHub Release page is useful in addition to the Git tag.
@@ -1040,3 +1085,21 @@ Initial entry:
 - Next: Execute Phase 0 Regex and compatibility spike.
 ```
 
+```text
+2026-07-30 — Phase 0
+- Completed: The user confirmed that the built-in Regex works correctly.
+- Tested: Regex Test Mode and actual chat rendering.
+- Problems found: The production CSS selector still needs confirmation during the skeleton/CSS phase.
+- Decisions changed: Added a Git-aware project snapshot script and archive workflow.
+- Additional verification: The archive script passed Bash syntax, inclusion/exclusion, ZIP creation, and ZIP integrity tests.
+- Next: Create the repository and begin Phase 1.
+```
+
+```text
+2026-07-30 — Phase 1
+- Completed: Created https://github.com/zNe4/SillyTavern-ChromaticDialogue and fixed the repository identity.
+- Tested: Public installation has not been tested because the extension skeleton does not exist yet.
+- Problems found: The new repository is not indexed by public search yet; this does not block development.
+- Decisions changed: Manifest homePage and installation URL are now final.
+- Next: Add the Phase 1 skeleton files and make the first project commit.
+```
