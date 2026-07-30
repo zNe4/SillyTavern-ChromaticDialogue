@@ -5,13 +5,16 @@
 
 ## Project status
 
-- Current phase: **Phase 1 — Loadable extension skeleton**
+- Current phase: **Phase 3 — Dynamic CSS manager**
 - Target SillyTavern version: **1.18.0+**
 - Reference installation: **1.18.0-1-g8172dcd0e**
 - First release target: **v0.1.0**
-- Implementation status: **Regex validated; GitHub repository created; no extension code written**
+- Implementation status: **Phases 1 and 2 complete; Phase 3 selector verification pending**
 - Repository: **https://github.com/zNe4/SillyTavern-ChromaticDialogue**
-- Next action: Populate the repository with the Phase 1 skeleton.
+- Latest implementation checkpoint: **`6e1621a` — `feat: add per-chat assignment state storage`**
+- Verification baseline: **20 passing tests: 10 domain, 9 storage, and 1 lifecycle**
+- Next action: Confirm the real chat-content selector in the disposable test chat,
+  then implement the dynamic CSS manager.
 
 Update this section whenever a phase begins or finishes.
 
@@ -135,12 +138,16 @@ SillyTavern-ChromaticDialogue/
 ├── settings.html
 ├── style.css
 ├── global.d.ts
+├── package.json
+├── roadmap.md
 ├── src/
 │   ├── constants.js
 │   ├── domain.js
 │   ├── chat-store.js
 │   ├── style-manager.js
 │   └── panel.js
+├── tests/
+│   └── *.test.mjs
 ├── docs/
 │   └── regex-setup.md
 ├── scripts/
@@ -159,11 +166,14 @@ SillyTavern-ChromaticDialogue/
 | `settings.html` | Static management-panel template |
 | `style.css` | Static panel layout and mobile styles |
 | `global.d.ts` | SillyTavern global types for editor/LSP support |
+| `package.json` | Local syntax and Node test commands; no runtime dependency bundle |
+| `roadmap.md` | Living implementation plan, decisions, and verified checkpoints |
 | `src/constants.js` | Metadata key, DOM IDs, selector, and limits |
 | `src/domain.js` | Schema, validation, normalization, and pure transformations |
 | `src/chat-store.js` | Current-chat metadata reads and writes |
 | `src/style-manager.js` | Dedicated generated-style lifecycle |
 | `src/panel.js` | UI rendering, form handling, and user feedback |
+| `tests/*.test.mjs` | Domain, storage, and lifecycle regression coverage |
 | `docs/regex-setup.md` | Exact built-in Regex configuration |
 | `scripts/archive-project.sh` | Create clean project snapshots for review |
 | `README.md` | Installation, usage, limitations, and troubleshooting |
@@ -614,21 +624,23 @@ docs: define regex display contract
 
 ### Phase 1 — Loadable extension skeleton
 
+Status: **Complete**
+
 Tasks:
 
 - [x] Create the Git repository.
 - [x] Select the final GitHub repository name.
-- [ ] Add license.
-- [ ] Create valid `manifest.json`.
-- [ ] Create `index.js`, `settings.html`, and `style.css`.
-- [ ] Add `global.d.ts` for Neovim LSP support.
-- [ ] Add and validate `scripts/archive-project.sh`.
-- [ ] Register an idempotent initialization path.
-- [ ] Render an empty Chromatic Dialogue settings panel.
-- [ ] Show no-chat and no-assignment states.
-- [ ] Confirm no console errors.
-- [ ] Push the repository to GitHub.
-- [ ] Install a clean copy using the Extension Manager and repository URL.
+- [x] Add license.
+- [x] Create valid `manifest.json`.
+- [x] Create `index.js`, `settings.html`, and `style.css`.
+- [x] Add `global.d.ts` for Neovim LSP support.
+- [x] Add and validate `scripts/archive-project.sh`.
+- [x] Register an idempotent initialization path.
+- [x] Render an empty Chromatic Dialogue settings panel.
+- [x] Show no-chat and no-assignment states.
+- [x] Confirm no console errors.
+- [x] Push the repository to GitHub.
+- [x] Install a clean copy using the Extension Manager and repository URL.
 
 Exit criteria:
 
@@ -637,28 +649,30 @@ Exit criteria:
 - Reloading the page does not duplicate the panel.
 - No runtime error appears in the browser console.
 
-Suggested commit:
+Completed scaffold commit:
 
 ```text
-chore: scaffold Chromatic Dialogue extension
+7d35ef1 chore: scaffold Chromatic Dialogue extension
 ```
 
 ### Phase 2 — Domain model and chat storage
 
+Status: **Complete**
+
 Tasks:
 
-- [ ] Define schema version 1.
-- [ ] Implement pure ID validation.
-- [ ] Implement name normalization.
-- [ ] Implement hex validation and normalization.
-- [ ] Implement safe state normalization.
-- [ ] Read metadata from the active chat on demand.
-- [ ] Save metadata with `saveMetadata()`.
-- [ ] Avoid retaining the `chatMetadata` reference.
-- [ ] Handle no active chat.
-- [ ] Handle missing metadata.
-- [ ] Handle partially malformed metadata.
-- [ ] Protect against a chat switch during an edit/save operation.
+- [x] Define schema version 1.
+- [x] Implement pure ID validation.
+- [x] Implement name normalization.
+- [x] Implement hex validation and normalization.
+- [x] Implement safe state normalization.
+- [x] Read metadata from the active chat on demand.
+- [x] Save metadata with `saveMetadata()`.
+- [x] Avoid retaining the `chatMetadata` reference.
+- [x] Handle no active chat.
+- [x] Handle missing metadata.
+- [x] Handle partially malformed metadata.
+- [x] Protect against a chat switch during an edit/save operation.
 
 Exit criteria:
 
@@ -667,16 +681,30 @@ Exit criteria:
 - Malformed metadata cannot crash initialization.
 - Invalid values are never persisted by the UI.
 
-Suggested commit:
+Verified:
+
+- 20 passing tests: 10 domain, 9 storage, and 1 Phase 1 lifecycle test.
+- A valid assignment persisted after a full browser reload.
+- Two chats retained isolated assignment states in both switching directions.
+- Intentionally malformed metadata normalized to a safe empty state and was
+  restored without console errors.
+- A chat change before or during asynchronous persistence is reported safely.
+- Temporary manual-test metadata was removed after verification.
+
+Completed commit:
 
 ```text
-feat: add per-chat assignment storage
+6e1621a feat: add per-chat assignment state storage
 ```
 
 ### Phase 3 — Dynamic CSS manager
 
+Status: **In progress**
+
 Tasks:
 
+- [ ] Confirm the final chat-content selector against the reference
+      SillyTavern installation.
 - [ ] Create or reuse the dedicated style element.
 - [ ] Generate scoped rules from normalized mappings.
 - [ ] Replace existing generated CSS atomically.
@@ -1024,6 +1052,10 @@ The project is not complete merely because the UI appears to work once.
 | 2026-07-30 | Support direct GitHub installation | SillyTavern can clone and load a valid extension repository automatically |
 | 2026-07-30 | Build snapshots from Git state | Automatically includes new project files while respecting `.gitignore` and explicit safety exclusions |
 | 2026-07-30 | Use `zNe4/SillyTavern-ChromaticDialogue` | The public GitHub project identity has been created |
+| 2026-07-30 | Use `zNe4` as the public author and AGPL-3.0 as the license | Resolves the remaining manifest and distribution choices before scaffolding |
+| 2026-07-30 | Use all-users placement for desktop development | Matches the official direct-checkout workflow while `global.d.ts` supports both scopes |
+| 2026-07-30 | Normalize every metadata read and candidate write through schema version 1 | Keeps malformed data and mutable context references outside the UI contract |
+| 2026-07-30 | Re-check chat identity before mutation and after asynchronous persistence | Prevents stale operations from being reported as successful after a chat switch |
 
 ---
 
@@ -1035,14 +1067,15 @@ Resolve before the indicated milestone:
 
 - [x] Final GitHub username/organization: `zNe4`.
 - [x] Final repository name: `SillyTavern-ChromaticDialogue`.
-- [ ] Confirm manifest author value; planned value is `zNe4`.
-- [ ] License choice. AGPL-3.0 is the default recommendation if unsure.
-- [ ] Confirm whether desktop development uses the user-scoped or all-users
-      extension location.
+- [x] Manifest author value: `zNe4`.
+- [x] License choice: AGPL-3.0.
+- [x] Use the all-users extension location for desktop development; retain
+      editor type support for both installation scopes.
 
 ### Before Phase 3
 
-- [ ] Final chat-content CSS selector.
+- [ ] Final chat-content CSS selector. Candidate: `#chat .mes_text`; verify it
+      against the disposable test chat before implementing `style-manager.js`.
 
 ### Before v0.1.0
 
@@ -1102,4 +1135,24 @@ Initial entry:
 - Problems found: The new repository is not indexed by public search yet; this does not block development.
 - Decisions changed: Manifest homePage and installation URL are now final.
 - Next: Add the Phase 1 skeleton files and make the first project commit.
+```
+
+```text
+2026-07-30 — Phase 1 skeleton and runtime verification
+- Completed: Added the manifest, lifecycle bootstrap, settings template, static styles, editor types, Regex guide, README, archive workflow, and empty-state panel behavior.
+- Tested: Static checks, direct installation, full reload, idempotent initialization, active/no-chat panel states, and browser-console behavior.
+- Problems found: No Phase 1 blocker remains.
+- Decisions changed: Fixed the public author to zNe4, selected AGPL-3.0, and selected the all-users location for desktop development.
+- Checkpoint: 7d35ef1 chore: scaffold Chromatic Dialogue extension.
+- Next: Implement the version-1 domain model and per-chat storage.
+```
+
+```text
+2026-07-30 — Phase 2
+- Completed: Added schema-versioned normalization, c1-c99 validation, name and color normalization, detached per-chat reads, guarded persistence, and panel integration through readActiveChatState().
+- Tested: 20/20 automated tests; syntax and whitespace checks; live save/reload persistence; two-way chat isolation; malformed-metadata fallback and restoration; test-data cleanup.
+- Problems found: A chat could change while saveMetadata() was pending; the store now re-checks identity afterward and returns chat-changed instead of reporting a stale success.
+- Decisions changed: Reads always obtain fresh SillyTavern context, and saves re-check chat identity both before mutation and after persistence.
+- Checkpoint: 6e1621a feat: add per-chat assignment state storage.
+- Next: Begin Phase 3 by verifying the real message-content selector in the disposable test chat.
 ```
