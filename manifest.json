@@ -1,0 +1,14 @@
+{
+  "display_name": "Chromatic Dialogue",
+  "loading_order": 10,
+  "js": "index.js",
+  "css": "style.css",
+  "author": "zNe4",
+  "version": "0.0.1",
+  "homePage": "https://github.com/zNe4/SillyTavern-ChromaticDialogue",
+  "auto_update": true,
+  "minimum_client_version": "1.18.0",
+  "hooks": {
+    "activate": "onActivate"
+  }
+}

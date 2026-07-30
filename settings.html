@@ -1,0 +1,46 @@
+<div
+    id="chromatic-dialogue-settings"
+    class="chromatic-dialogue-settings"
+    data-chat-state="none"
+>
+    <div class="inline-drawer">
+        <div class="inline-drawer-toggle inline-drawer-header">
+            <b>Chromatic Dialogue</b>
+            <div
+                class="inline-drawer-icon fa-solid fa-circle-chevron-down down"
+                aria-hidden="true"
+            ></div>
+        </div>
+
+        <div class="inline-drawer-content">
+            <p class="chromatic-dialogue-description">
+                Manage dialogue color assignments for the active chat.
+            </p>
+
+            <div
+                id="chromatic-dialogue-no-chat"
+                class="chromatic-dialogue-state"
+                role="status"
+            >
+                <span
+                    class="fa-solid fa-comments chromatic-dialogue-state-icon"
+                    aria-hidden="true"
+                ></span>
+                <p>Open or create a chat to configure dialogue colors.</p>
+            </div>
+
+            <div
+                id="chromatic-dialogue-empty-state"
+                class="chromatic-dialogue-state"
+                role="status"
+                hidden
+            >
+                <span
+                    class="fa-solid fa-palette chromatic-dialogue-state-icon"
+                    aria-hidden="true"
+                ></span>
+                <p>This chat has no dialogue color assignments yet.</p>
+            </div>
+        </div>
+    </div>
+</div>

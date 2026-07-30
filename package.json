@@ -1,0 +1,9 @@
+{
+  "name": "sillytavern-chromatic-dialogue",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/index.test.mjs"
+  }
+}
