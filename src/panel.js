@@ -5,6 +5,7 @@ import {
     NO_CHAT_STATE_ID,
     PANEL_ID,
 } from './constants.js';
+import { readActiveChatState } from './chat-store.js';
 
 /**
  * Create the extension settings panel if it is not already present.
@@ -57,11 +58,8 @@ export function refreshPanelState() {
         return;
     }
 
-    const { chatId } = SillyTavern.getContext();
-    const hasActiveChat =
-        typeof chatId === 'string'
-            ? chatId.trim().length > 0
-            : Boolean(chatId);
+    const { status } = readActiveChatState();
+    const hasActiveChat = status !== 'no-chat';
 
     const noChatState = panel.querySelector(`#${NO_CHAT_STATE_ID}`);
     const emptyChatState = panel.querySelector(`#${EMPTY_CHAT_STATE_ID}`);
