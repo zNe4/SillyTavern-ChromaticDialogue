@@ -5,16 +5,16 @@
 
 ## Project status
 
-- Current phase: **Phase 3 — Dynamic CSS manager**
+- Current phase: **Phase 4 — Manual assignment CRUD**
 - Target SillyTavern version: **1.18.0+**
 - Reference installation: **1.18.0-1-g8172dcd0e**
 - First release target: **v0.1.0**
-- Implementation status: **Phases 1 and 2 complete; Phase 3 selector verification pending**
+- Implementation status: **Phases 1 through 3 complete; Phase 4 not started**
 - Repository: **https://github.com/zNe4/SillyTavern-ChromaticDialogue**
-- Latest implementation checkpoint: **`6e1621a` — `feat: add per-chat assignment state storage`**
-- Verification baseline: **20 passing tests: 10 domain, 9 storage, and 1 lifecycle**
-- Next action: Confirm the real chat-content selector in the disposable test chat,
-  then implement the dynamic CSS manager.
+- Latest implementation checkpoint: **`c43821b` — `feat: add dynamic dialogue CSS manager`**
+- Verification baseline: **28 passing tests: 10 domain, 9 storage, 7 style-manager, 1 style-runtime, and 1 lifecycle**
+- Next action: Begin Phase 4 manual assignment CRUD with one small,
+  independently verified change.
 
 Update this section whenever a phase begins or finishes.
 
@@ -33,13 +33,13 @@ AI writes:
 [c1]Dialogue[/c]
 
 SillyTavern's built-in Regex extension displays:
-<span class="cd-c1">“Dialogue”</span>
+<span class="custom-cd-c1">“Dialogue”</span>
 
 Chromatic Dialogue stores:
 c1 = Catherine = #56B4E9
 
 Chromatic Dialogue generates:
-.cd-c1 { color: #56B4E9; }
+#chat .mes_text .custom-cd-c1 { color: #56B4E9; }
 ```
 
 The project deliberately separates three responsibilities:
@@ -145,6 +145,7 @@ SillyTavern-ChromaticDialogue/
 │   ├── domain.js
 │   ├── chat-store.js
 │   ├── style-manager.js
+│   ├── style-runtime.js
 │   └── panel.js
 ├── tests/
 │   └── *.test.mjs
@@ -172,6 +173,7 @@ SillyTavern-ChromaticDialogue/
 | `src/domain.js` | Schema, validation, normalization, and pure transformations |
 | `src/chat-store.js` | Current-chat metadata reads and writes |
 | `src/style-manager.js` | Dedicated generated-style lifecycle |
+| `src/style-runtime.js` | Translate active-chat storage state into generated CSS updates |
 | `src/panel.js` | UI rendering, form handling, and user feedback |
 | `tests/*.test.mjs` | Domain, storage, and lifecycle regression coverage |
 | `docs/regex-setup.md` | Exact built-in Regex configuration |
@@ -486,7 +488,7 @@ The extension owns one style element:
 Candidate generated rule:
 
 ```css
-#chat .mes_text .cd-c1 {
+#chat .mes_text .custom-cd-c1 {
   color: #56B4E9;
 }
 ```
@@ -577,7 +579,8 @@ Tasks:
 Carried forward:
 
 - Confirm raw-marker storage and outgoing-prompt behavior during Phase 6.
-- Confirm `.mes_text` or the actual message-content selector during Phase 3.
+- Use the verified `#chat .mes_text` content scope and `custom-cd-cN`
+  rendered-class contract.
 - Test multiline, multiple-marker, edit, and streaming behavior during Phase 6.
 - Record mobile differences during Phase 6.
 
@@ -699,31 +702,46 @@ Completed commit:
 
 ### Phase 3 — Dynamic CSS manager
 
-Status: **In progress**
+Status: **Complete**
 
 Tasks:
 
-- [ ] Confirm the final chat-content selector against the reference
+- [x] Confirm the final chat-content selector against the reference
       SillyTavern installation.
-- [ ] Create or reuse the dedicated style element.
-- [ ] Generate scoped rules from normalized mappings.
-- [ ] Replace existing generated CSS atomically.
-- [ ] Clear rules for empty/no-chat state.
-- [ ] Reject unvalidated IDs and colors.
-- [ ] Test theme specificity.
-- [ ] Verify that style updates require no message DOM traversal.
+- [x] Confirm the rendered Regex class contract as `custom-cd-c1` through
+      `custom-cd-c99`.
+- [x] Create or reuse the dedicated style element.
+- [x] Generate scoped rules from normalized mappings.
+- [x] Replace existing generated CSS atomically.
+- [x] Clear rules for empty/no-chat state.
+- [x] Reject unvalidated IDs, names, and colors.
+- [x] Test theme specificity.
+- [x] Verify that style updates require no message DOM traversal.
+- [x] Refresh generated CSS through the existing chat lifecycle without
+      polling, observers, intervals, or continuous scanning.
+
+Verified selector contract:
+
+```css
+#chat .mes_text .custom-cd-c1 {
+    color: #56B4E9;
+}
+```
 
 Exit criteria:
 
-- Changing a saved color immediately changes rendered dialogue.
-- Exactly one generated style element exists.
-- Switching to an empty chat removes previous-chat colors.
-- The extension changes CSS only, not message content.
+- [x] Changing a saved color immediately changes rendered dialogue.
+- [x] Exactly one generated style element exists.
+- [x] Switching to an empty chat removes previous-chat colors.
+- [x] Reopening a mapped chat restores its saved colors.
+- [x] The extension changes CSS only, not message content.
+- [x] No polling, observer, background interval, or continuous DOM scan was
+      introduced.
 
-Suggested commit:
+Completed commit:
 
 ```text
-feat: generate scoped dialogue color styles
+c43821b feat: add dynamic dialogue CSS manager
 ```
 
 ### Phase 4 — Manual assignment CRUD
@@ -1056,6 +1074,8 @@ The project is not complete merely because the UI appears to work once.
 | 2026-07-30 | Use all-users placement for desktop development | Matches the official direct-checkout workflow while `global.d.ts` supports both scopes |
 | 2026-07-30 | Normalize every metadata read and candidate write through schema version 1 | Keeps malformed data and mutable context references outside the UI contract |
 | 2026-07-30 | Re-check chat identity before mutation and after asynchronous persistence | Prevents stale operations from being reported as successful after a chat switch |
+| 2026-07-30 | Scope generated rules to `#chat .mes_text .custom-cd-cN` | Matches the verified SillyTavern message body and actual Regex-rendered class contract |
+| 2026-07-30 | Register one combined chat refresh listener during extension activation | Restored chat metadata may become available before `APP_INITIALIZED`; early `CHAT_CHANGED` registration applies and clears CSS reliably without polling |
 
 ---
 
@@ -1074,8 +1094,8 @@ Resolve before the indicated milestone:
 
 ### Before Phase 3
 
-- [ ] Final chat-content CSS selector. Candidate: `#chat .mes_text`; verify it
-      against the disposable test chat before implementing `style-manager.js`.
+- [x] Final chat-content CSS selector: `#chat .mes_text`.
+      Rendered Regex classes use the verified `custom-cd-cN` contract.
 
 ### Before v0.1.0
 
@@ -1155,4 +1175,15 @@ Initial entry:
 - Decisions changed: Reads always obtain fresh SillyTavern context, and saves re-check chat identity both before mutation and after persistence.
 - Checkpoint: 6e1621a feat: add per-chat assignment state storage.
 - Next: Begin Phase 3 by verifying the real message-content selector in the disposable test chat.
+```
+
+```text
+2026-07-30 — Phase 3
+- Completed: Verified the real message-content and Regex class selectors; added strict deterministic CSS generation, one reusable generated style element, the storage-to-style runtime bridge, and one combined chat refresh path.
+- Tested: 28/28 automated tests; selector and theme specificity; immediate color replacement; one-style-element reuse; no-chat clearing; chat switching; reopening a mapped chat; metadata cleanup; and browser reload behavior with no active chat.
+- Problems found: APP_INITIALIZED can occur after the startup CHAT_CHANGED event, so registering the chat listener during initialization missed restored chat metadata.
+- Decisions changed: Register the existing CHAT_CHANGED listener during extension activation and use it to refresh both generated CSS and panel state.
+- Additional verification: No message content was modified; no polling, MutationObserver, background interval, animation loop, or continuous DOM scan was introduced; no new red browser-console errors appeared.
+- Checkpoint: c43821b feat: add dynamic dialogue CSS manager.
+- Next: Create and push the Phase 3 implementation commit, record its checkpoint, then begin Phase 4 manual assignment CRUD.
 ```
