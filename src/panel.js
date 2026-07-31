@@ -30,6 +30,7 @@ import { refreshDialogueStyles } from './style-runtime.js';
 const synchronizedColorPanels = new WeakSet();
 const registeredAssignmentForms = new WeakSet();
 const assignmentEditorStates = new WeakMap();
+const DEFAULT_ASSIGNMENT_COLOR = '#56B4E9';
 
 /**
  * Obtain panel-scoped transient editor state.
@@ -42,6 +43,8 @@ const assignmentEditorStates = new WeakMap();
  *     editingId: string | null,
  *     editingChatId: string | null,
  *     saving: boolean,
+ *     hasRenderedChat: boolean,
+ *     renderedChatId: string | null,
  * }}
  */
 function getAssignmentEditorState(panel) {
@@ -52,6 +55,8 @@ function getAssignmentEditorState(panel) {
             editingId: null,
             editingChatId: null,
             saving: false,
+            hasRenderedChat: false,
+            renderedChatId: null,
         };
 
         assignmentEditorStates.set(panel, editorState);
@@ -130,6 +135,15 @@ function clearAssignmentEditing(
         const nameInput = panel.querySelector(
             `#${ASSIGNMENT_NAME_INPUT_ID}`,
         );
+        const colorPicker = panel.querySelector(
+            `#${ASSIGNMENT_COLOR_PICKER_ID}`,
+        );
+        const hexColorInput = panel.querySelector(
+            `#${ASSIGNMENT_HEX_COLOR_INPUT_ID}`,
+        );
+        const colorPreview = panel.querySelector(
+            `#${ASSIGNMENT_COLOR_PREVIEW_ID}`,
+        );
 
         if (idInput) {
             idInput.value = '';
@@ -137,6 +151,19 @@ function clearAssignmentEditing(
 
         if (nameInput) {
             nameInput.value = '';
+        }
+
+        if (colorPicker) {
+            colorPicker.value = DEFAULT_ASSIGNMENT_COLOR;
+        }
+
+        if (hexColorInput) {
+            hexColorInput.value = DEFAULT_ASSIGNMENT_COLOR;
+        }
+
+        if (colorPreview) {
+            colorPreview.style.color =
+                DEFAULT_ASSIGNMENT_COLOR;
         }
     }
 
@@ -272,6 +299,30 @@ function showAssignmentFeedback(feedback, message, kind) {
     feedback.textContent = message;
     feedback.dataset.feedbackKind = kind;
     feedback.hidden = false;
+}
+
+/**
+ * Refresh the current chat and suppress completion UI from another chat.
+ *
+ * A pending operation can settle after its originating chat has stopped being
+ * active. In that case the lifecycle event has normally refreshed the panel
+ * already, but refreshing again is idempotent and guarantees convergence if
+ * event and promise sequencing differ.
+ *
+ * @param {string} expectedChatId
+ * @returns {boolean}
+ */
+function refreshIfOperationOriginChanged(expectedChatId) {
+    const { status, chatId } = readActiveChatState();
+
+    if (status === 'ready' && chatId === expectedChatId) {
+        return false;
+    }
+
+    refreshDialogueStyles();
+    refreshPanelState();
+
+    return true;
 }
 
 /**
@@ -451,6 +502,10 @@ function registerAssignmentForm(panel) {
             );
 
             if (result.status !== 'saved') {
+                if (refreshIfOperationOriginChanged(chatId)) {
+                    return;
+                }
+
                 const failureMessages = {
                     'invalid-state':
                         'The assignment could not be saved because the state was invalid.',
@@ -482,6 +537,10 @@ function registerAssignmentForm(panel) {
                 return;
             }
 
+            if (refreshIfOperationOriginChanged(chatId)) {
+                return;
+            }
+
             if (isEditing) {
                 clearAssignmentEditing(panel);
             }
@@ -508,6 +567,10 @@ function registerAssignmentForm(panel) {
                     : '[Chromatic Dialogue] Failed to add assignment.',
                 error,
             );
+
+            if (refreshIfOperationOriginChanged(chatId)) {
+                return;
+            }
 
             showAssignmentFeedback(
                 feedback,
@@ -778,6 +841,14 @@ async function deleteAssignment(panel, assignmentId) {
         );
 
         if (result.status !== 'saved') {
+            if (
+                refreshIfOperationOriginChanged(
+                    current.chatId,
+                )
+            ) {
+                return;
+            }
+
             const failureMessages = {
                 'invalid-state':
                     'The assignment could not be deleted because the state was invalid.',
@@ -807,6 +878,14 @@ async function deleteAssignment(panel, assignmentId) {
         }
 
         if (
+            refreshIfOperationOriginChanged(
+                current.chatId,
+            )
+        ) {
+            return;
+        }
+
+        if (
             editorState.editingId === id &&
             editorState.editingChatId === current.chatId
         ) {
@@ -825,6 +904,15 @@ async function deleteAssignment(panel, assignmentId) {
             '[Chromatic Dialogue] Failed to delete assignment.',
             error,
         );
+
+        if (
+            refreshIfOperationOriginChanged(
+                current.chatId,
+            )
+        ) {
+            return;
+        }
+
         showAssignmentFeedback(
             feedback,
             'The assignment deletion failed. Check the browser console for details.',
@@ -937,6 +1025,13 @@ export function refreshPanelState() {
 
     const { status, chatId, state } = readActiveChatState();
     const editorState = getAssignmentEditorState(panel);
+    const activeChatChanged =
+        editorState.hasRenderedChat &&
+        editorState.renderedChatId !== chatId;
+
+    editorState.hasRenderedChat = true;
+    editorState.renderedChatId = chatId;
+
     const hasCurrentEditingTarget =
         Boolean(editorState.editingId) &&
         status === 'ready' &&
@@ -946,7 +1041,10 @@ export function refreshPanelState() {
             editorState.editingId,
         );
 
-    if (editorState.editingId && !hasCurrentEditingTarget) {
+    if (
+        activeChatChanged ||
+        (editorState.editingId && !hasCurrentEditingTarget)
+    ) {
         clearAssignmentEditing(panel);
     } else {
         refreshAssignmentFormMode(panel);

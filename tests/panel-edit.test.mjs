@@ -5,6 +5,7 @@ import {
     CHAT_METADATA_KEY,
     GENERATED_STYLE_ID,
 } from '../src/constants.js';
+import { refreshDialogueStyles } from '../src/style-runtime.js';
 
 function createControl(value = '') {
     const listeners = new Map();
@@ -311,6 +312,26 @@ async function selectAssignment(harness, index = 1) {
     await editButton.dispatch('click');
 }
 
+test('repeated refreshes keep one listener per current control', async (t) => {
+    const harness = await createEditHarness(t);
+
+    for (let index = 0; index < 25; index += 1) {
+        harness.refreshPanelState();
+    }
+
+    assert.equal(harness.submitButton.listenerCount('click'), 1);
+    assert.equal(harness.cancelButton.listenerCount('click'), 1);
+    assert.equal(harness.colorPicker.listenerCount('input'), 1);
+    assert.equal(harness.hexColorInput.listenerCount('input'), 1);
+    assert.equal(harness.getEditButtons().length, 4);
+    assert.equal(
+        harness.getEditButtons().every(
+            (button) => button.listenerCount('click') === 1,
+        ),
+        true,
+    );
+});
+
 test('persists an immutable-ID edit and refreshes the panel and CSS', async (t) => {
     const harness = await createEditHarness(t);
 
@@ -532,8 +553,8 @@ test('locks edit controls and clears stale mode after a pending chat switch', as
         [CHAT_METADATA_KEY]: {
             schemaVersion: 1,
             assignments: {
-                c1: {
-                    name: 'Chat B',
+                c2: {
+                    name: 'Chat B same ID',
                     color: '#BBBBBB',
                 },
             },
@@ -542,6 +563,21 @@ test('locks edit controls and clears stale mode after a pending chat switch', as
 
     harness.context.chatId = 'chat-b';
     harness.context.chatMetadata = chatBMetadata;
+
+    refreshDialogueStyles();
+    harness.refreshPanelState();
+
+    assert.equal(harness.panel.dataset.assignmentMode, 'add');
+    assert.equal(harness.idInput.value, '');
+    assert.equal(harness.nameInput.value, '');
+    assert.equal(harness.colorPicker.value, '#56B4E9');
+    assert.equal(harness.hexColorInput.value, '#56B4E9');
+    assert.equal(
+        harness.colorPreview.style.color,
+        '#56B4E9',
+    );
+    assert.equal(harness.feedback.hidden, true);
+
     harness.getResolvePendingSave()();
 
     await pendingEdit;
@@ -554,13 +590,24 @@ test('locks edit controls and clears stale mode after a pending chat switch', as
     assert.deepEqual(
         chatBMetadata[CHAT_METADATA_KEY].assignments,
         {
-            c1: {
-                name: 'Chat B',
+            c2: {
+                name: 'Chat B same ID',
                 color: '#BBBBBB',
             },
         },
     );
-    assert.equal(harness.getGeneratedStyle(), null);
+    assert.equal(
+        harness.getGeneratedStyle().textContent,
+        '#chat .mes_text .custom-cd-c2 {\n' +
+            '    color: #BBBBBB;\n' +
+            '}',
+    );
+    assert.deepEqual(
+        harness.assignmentList.children[0].children
+            .slice(0, 3)
+            .map((element) => element.textContent),
+        ['c2', 'Chat B same ID', '#BBBBBB'],
+    );
     assert.equal(harness.panel.dataset.assignmentMode, 'add');
     assert.equal(harness.idInput.value, '');
     assert.equal(harness.nameInput.value, '');
@@ -572,10 +619,8 @@ test('locks edit controls and clears stale mode after a pending chat switch', as
         ),
         true,
     );
-    assert.equal(
-        harness.feedback.textContent,
-        'The active chat changed before the assignment could be saved.',
-    );
+    assert.equal(harness.feedback.hidden, true);
+    assert.equal(harness.feedback.textContent, '');
 });
 
 test('keeps edit mode retryable and restores metadata after save failure', async (t) => {

@@ -5,6 +5,7 @@ import {
     CHAT_METADATA_KEY,
     GENERATED_STYLE_ID,
 } from '../src/constants.js';
+import { refreshDialogueStyles } from '../src/style-runtime.js';
 
 function createControl(value = '') {
     const listeners = new Map();
@@ -620,6 +621,18 @@ test('a pending chat switch never refreshes deletion into the new chat', async (
 
     harness.context.chatId = 'chat-b';
     harness.context.chatMetadata = chatBMetadata;
+
+    refreshDialogueStyles();
+    harness.refreshPanelState();
+
+    assert.equal(harness.feedback.hidden, true);
+    assert.deepEqual(
+        harness.assignmentList.children[0].children
+            .slice(0, 3)
+            .map((element) => element.textContent),
+        ['c2', 'Chat B', '#BBBBBB'],
+    );
+
     harness.getResolvePendingSave()();
 
     await pendingDelete;
@@ -643,11 +656,14 @@ test('a pending chat switch never refreshes deletion into the new chat', async (
             },
         },
     );
-    assert.equal(harness.getGeneratedStyle(), null);
     assert.equal(
-        harness.feedback.textContent,
-        'The active chat changed before the assignment could be deleted.',
+        harness.getGeneratedStyle().textContent,
+        '#chat .mes_text .custom-cd-c2 {\n' +
+            '    color: #BBBBBB;\n' +
+            '}',
     );
+    assert.equal(harness.feedback.hidden, true);
+    assert.equal(harness.feedback.textContent, '');
     assert.equal(
         harness.getActionButtons().every(
             (button) => !button.disabled,

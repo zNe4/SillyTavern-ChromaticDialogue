@@ -8,10 +8,11 @@ It is designed to associate compact dialogue markers such as
 messages and outgoing prompts unchanged.
 
 > [!IMPORTANT]
-> Chromatic Dialogue is currently in early development. Phases 1 through 4
+> Chromatic Dialogue is currently in early development. Phases 1 through 5
 > provide per-chat storage, dynamic dialogue styles, and complete manual
-> assignment management. AI proposals, inherited defaults, import/export, and
-> release hardening are not implemented yet.
+> assignment management with chat-change synchronization. AI proposals,
+> inherited defaults, import/export, and release hardening are not implemented
+> yet.
 
 ## Intended workflow
 
@@ -63,7 +64,13 @@ The current implementation:
 * Requires confirmation before deletion.
 * Validates names, IDs, and six-digit hexadecimal colors before persistence.
 * Regenerates scoped dialogue CSS immediately after successful changes.
-* Restores saved mappings after reload and refreshes them when chats change.
+* Restores saved mappings after reload.
+* Synchronizes the assignment table and generated CSS with every active-chat
+  change, including rapid repeated switching.
+* Clears stale edit identity, form values, preview, and feedback when the active
+  chat changes, even when both chats contain the same assignment ID.
+* Prevents pending add, edit, or delete completion UI from repainting results
+  from a previously active chat.
 * Leaves stored messages and outgoing prompts unchanged.
 * Performs no polling, message-DOM scanning, or background observation.
 * Remains independent of build tools and runtime dependencies.
@@ -91,10 +98,11 @@ Run the automated tests with:
 npm test
 ```
 
-The test suite currently verifies domain normalization, guarded per-chat
+The 49-test suite currently verifies domain normalization, guarded per-chat
 persistence, generated CSS, lifecycle behavior, assignment rendering,
-validation, add/edit/delete operations, pending-save locking, chat-switch
-safety, persistence rollback, and ID reuse after deletion.
+validation, add/edit/delete operations, pending-save locking, rapid chat-switch
+isolation, stale form and completion invalidation, blank/no-chat states,
+persistence rollback, and ID reuse after deletion.
 
 ## Project structure
 

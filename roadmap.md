@@ -5,15 +5,15 @@
 
 ## Project status
 
-- Current phase: **Phase 4 complete — Phase 5 next**
+- Current phase: **Phase 5 complete — Phase 6 next**
 - Target SillyTavern version: **1.18.0+**
 - Reference installation: **1.18.0-1-g8172dcd0e**
 - First release target: **v0.1.0**
-- Implementation status: **Phases 1 through 4 complete**
+- Implementation status: **Phases 1 through 5 complete**
 - Repository: **https://github.com/zNe4/SillyTavern-ChromaticDialogue**
-- Latest implementation checkpoint: **Phase 4 complete — manual add, immutable-ID edit, confirmed deletion, immediate CSS refresh, and persistence safety**
-- Verification baseline: **48 passing tests plus a Firefox add → edit → reload → delete → reload gate with complete disposable-data cleanup**
-- Next action: Commit and push the verified Phase 4 completion, then begin Phase 5 chat-change synchronization.
+- Latest implementation checkpoint: **Phase 5 complete — active-chat table/CSS synchronization, stale editor invalidation, and pending-operation completion isolation**
+- Verification baseline: **49 passing tests plus Firefox desktop and 390 × 844 responsive-mobile chat-switch gates with exact per-chat cleanup**
+- Next action: Commit and push the verified Phase 5 completion, then begin Phase 6 MVP hardening and mobile verification.
 
 Update this section whenever a phase begins or finishes.
 
@@ -781,16 +781,18 @@ feat: complete manual assignment CRUD
 
 ### Phase 5 — Chat-change synchronization
 
+Status: **Complete**
+
 Tasks:
 
-- [ ] Listen for `eventTypes.CHAT_CHANGED`.
-- [ ] Invalidate open edit state on chat switch.
-- [ ] Load the new chat's mappings.
-- [ ] Rerender the table.
-- [ ] Replace generated CSS.
-- [ ] Test rapid repeated switching.
-- [ ] Test new-chat creation.
-- [ ] Test no-character/no-chat state.
+- [x] Listen for `eventTypes.CHAT_CHANGED`.
+- [x] Invalidate open edit state on chat switch.
+- [x] Load the new chat's mappings.
+- [x] Rerender the table.
+- [x] Replace generated CSS.
+- [x] Test rapid repeated switching.
+- [x] Test new-chat creation.
+- [x] Test no-character/no-chat state.
 
 Required scenario:
 
@@ -801,12 +803,12 @@ Chat B: c1 = Daniel    = #E69F00
 
 Exit criteria:
 
-- Table and colors always match the active chat.
-- No assignment leaks between chats.
-- No stale save writes to the wrong chat.
-- Switching does not duplicate event listeners or UI.
+- [x] Table and colors always match the active chat.
+- [x] No assignment leaks between chats.
+- [x] No stale save writes to the wrong chat.
+- [x] Switching does not duplicate event listeners or UI.
 
-Suggested commit:
+Planned completion commit:
 
 ```text
 feat: synchronize assignments on chat change
@@ -1081,6 +1083,7 @@ The project is not complete merely because the UI appears to work once.
 | 2026-07-30 | Re-check chat identity before mutation and after asynchronous persistence | Prevents stale operations from being reported as successful after a chat switch |
 | 2026-07-30 | Scope generated rules to `#chat .mes_text .custom-cd-cN` | Matches the verified SillyTavern message body and actual Regex-rendered class contract |
 | 2026-07-30 | Register one combined chat refresh listener during extension activation | Restored chat metadata may become available before `APP_INITIALIZED`; early `CHAT_CHANGED` registration applies and clears CSS reliably without polling |
+| 2026-07-31 | Track the rendered chat identity per panel and suppress stale operation completions | The existing single `CHAT_CHANGED` listener remains sufficient while form, feedback, rows, and CSS converge safely after rapid switches or pending saves |
 
 ---
 
@@ -1211,4 +1214,14 @@ Initial entry:
 - Decisions changed: Assignment IDs remain immutable during edit; deletion always requires confirmation and revalidates both chat identity and the confirmed assignment snapshot; all assignment actions lock while persistence is pending; roadmap completion requires both automated and live-browser evidence.
 - Additional verification: No polling, MutationObserver, background interval, animation loop, continuous DOM scan, message traversal, or message-content rewrite was introduced. All disposable c99 data was removed and the original c1 test mapping remained unchanged.
 - Next: Commit and push the verified Phase 4 completion, then begin Phase 5 chat-change synchronization.
+```
+
+```text
+2026-07-31 — Phase 5
+- Completed: Hardened the existing single CHAT_CHANGED path with panel-scoped rendered-chat identity, complete stale form/preview/feedback invalidation, and suppression of stale pending add/edit/delete completion UI.
+- Tested: 49/49 automated tests; focused 16/16 lifecycle and add/edit/delete synchronization tests; exact live runtime synchronization; desktop A → B → A isolation; seven recorded rapid switches; same-ID edit invalidation; blank-chat and no-chat states; reload recovery; Firefox Responsive Design Mode at 390 × 844; and no new extension-attributable console errors.
+- Problems found: An operator attempted to arm the desktop edit-switch check after already switching chats; the harness stopped safely, preserved progress, and the corrected sequence passed. No product failure remained.
+- Decisions changed: Preserve the existing one-time CHAT_CHANGED listener and guarded save path; use panel-scoped rendered identity to prevent stale UI completions from crossing chat boundaries.
+- Additional verification: Chat A and Chat B metadata were restored exactly to their read-only snapshots; no polling, observer, animation loop, continuous DOM scan, message traversal, message rewrite, or direct metadata write was introduced.
+- Next: Commit and push the verified Phase 5 completion, then begin Phase 6 MVP hardening and mobile verification.
 ```

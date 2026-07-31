@@ -5,7 +5,7 @@ import {
     GENERATED_STYLE_ID,
 } from '../src/constants.js';
 
-test('initializes once and reflects the active chat', async (t) => {
+test('registers once and synchronizes repeated active-chat changes', async (t) => {
     const eventTypes = {
         APP_INITIALIZED: 'app_initialized',
         CHAT_CHANGED: 'chat_changed',
@@ -302,6 +302,86 @@ test('initializes once and reflects the active chat', async (t) => {
         deleteButton.attributes.get('aria-label'),
         'Delete assignment c1',
     );
+
+    const chatAState = {
+        [CHAT_METADATA_KEY]: {
+            schemaVersion: 1,
+            assignments: {
+                c1: {
+                    name: 'Catherine',
+                    color: '#56B4E9',
+                },
+            },
+        },
+    };
+
+    const chatBState = {
+        [CHAT_METADATA_KEY]: {
+            schemaVersion: 1,
+            assignments: {
+                c1: {
+                    name: 'Daniel',
+                    color: '#E69F00',
+                },
+            },
+        },
+    };
+
+    const activateChat = async (chatId, chatMetadata) => {
+        activeChatId = chatId;
+        activeChatMetadata = chatMetadata;
+        await chatChangedHandlers[0]();
+    };
+
+    const assertRenderedAssignment = (name, color) => {
+        assert.equal(assignmentList.children.length, 1);
+        assert.deepEqual(
+            assignmentList.children[0].children
+                .slice(0, 3)
+                .map((element) => element.textContent),
+            ['c1', name, color],
+        );
+        assert.equal(
+            generatedStyle.textContent,
+            '#chat .mes_text .custom-cd-c1 {\n' +
+                `    color: ${color};\n` +
+                '}',
+        );
+    };
+
+    await activateChat('chat-a', chatAState);
+    assertRenderedAssignment('Catherine', '#56B4E9');
+
+    await activateChat('chat-b', chatBState);
+    assertRenderedAssignment('Daniel', '#E69F00');
+
+    await activateChat('chat-a', chatAState);
+    assertRenderedAssignment('Catherine', '#56B4E9');
+
+    for (let index = 0; index < 25; index += 1) {
+        const useChatA = index % 2 === 0;
+
+        await activateChat(
+            useChatA ? 'chat-a' : 'chat-b',
+            useChatA ? chatAState : chatBState,
+        );
+    }
+
+    assert.equal(activeChatId, 'chat-a');
+    assertRenderedAssignment('Catherine', '#56B4E9');
+
+    await activateChat('chat-b', chatBState);
+    assertRenderedAssignment('Daniel', '#E69F00');
+
+    await activateChat('new-blank-chat', {});
+
+    assert.equal(panel.dataset.chatState, 'active');
+    assert.equal(noChatState.hidden, true);
+    assert.equal(emptyChatState.hidden, false);
+    assert.equal(assignmentFormFieldset.disabled, false);
+    assert.equal(assignmentList.hidden, true);
+    assert.deepEqual(assignmentList.children, []);
+    assert.equal(generatedStyle.textContent, '');
 
     await appInitializedHandlers[0]();
 

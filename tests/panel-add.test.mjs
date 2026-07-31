@@ -5,6 +5,7 @@ import {
     CHAT_METADATA_KEY,
     GENERATED_STYLE_ID,
 } from '../src/constants.js';
+import { refreshDialogueStyles } from '../src/style-runtime.js';
 
 function createControl(value = '') {
     const listeners = new Map();
@@ -297,12 +298,11 @@ test('adds an assignment and refreshes the panel and CSS', async (t) => {
         'Assignment c2 added.',
     );
 
-    const cssAfterSuccessfulAdd = generatedStyle.textContent;
-
     idInput.value = 'c3';
     nameInput.value = 'Bob';
     hexColorInput.value = '#654321';
     holdNextSave = true;
+    const chatAMetadata = context.chatMetadata;
 
     const pendingAdd = addButton.dispatch('click');
 
@@ -313,27 +313,74 @@ test('adds an assignment and refreshes the panel and CSS', async (t) => {
     assert.equal(typeof resolvePendingSave, 'function');
 
     context.chatId = 'Other chat';
+    context.chatMetadata = {
+        [CHAT_METADATA_KEY]: {
+            schemaVersion: 1,
+            assignments: {
+                c1: {
+                    name: 'Daniel',
+                    color: '#E69F00',
+                },
+            },
+        },
+    };
+
+    refreshDialogueStyles();
+    refreshPanelState();
+
+    assert.equal(idInput.value, '');
+    assert.equal(nameInput.value, '');
+    assert.equal(colorPicker.value, '#56B4E9');
+    assert.equal(hexColorInput.value, '#56B4E9');
+    assert.equal(colorPreview.style.color, '#56B4E9');
+    assert.equal(feedback.hidden, true);
+    assert.deepEqual(
+        assignmentList.children[0].children
+            .slice(0, 3)
+            .map((element) => element.textContent),
+        ['c1', 'Daniel', '#E69F00'],
+    );
+    assert.equal(
+        generatedStyle.textContent,
+        '#chat .mes_text .custom-cd-c1 {\n' +
+            '    color: #E69F00;\n' +
+            '}',
+    );
+
     resolvePendingSave();
 
     await pendingAdd;
 
     assert.equal(addButton.disabled, false);
-    assert.equal(feedback.hidden, false);
-    assert.equal(feedback.dataset.feedbackKind, 'error');
-    assert.equal(
-        feedback.textContent,
-        'The active chat changed before the assignment could be saved.',
+    assert.deepEqual(
+        chatAMetadata[CHAT_METADATA_KEY].assignments.c3,
+        {
+            name: 'Bob',
+            color: '#654321',
+        },
     );
-
-    assert.equal(
-        generatedStyle.textContent,
-        cssAfterSuccessfulAdd,
+    assert.deepEqual(
+        context.chatMetadata[CHAT_METADATA_KEY].assignments,
+        {
+            c1: {
+                name: 'Daniel',
+                color: '#E69F00',
+            },
+        },
     );
+    assert.equal(feedback.hidden, true);
+    assert.equal(feedback.textContent, '');
 
     assert.deepEqual(
-        assignmentList.children.map(
-            (row) => row.dataset.assignmentId,
-        ),
-        ['c1', 'c2'],
+        assignmentList.children[0].children
+            .slice(0, 3)
+            .map((element) => element.textContent),
+        ['c1', 'Daniel', '#E69F00'],
+    );
+    assert.equal(
+        generatedStyle.textContent,
+        '#chat .mes_text .custom-cd-c1 {\n' +
+            '    color: #E69F00;\n' +
+            '}',
     );
 });
