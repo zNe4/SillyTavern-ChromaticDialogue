@@ -15,6 +15,8 @@ export const ASSIGNMENT_LIST_ID =
     'chromatic-dialogue-assignment-list';
 export const ASSIGNMENT_FORM_FIELDSET_ID =
     'chromatic-dialogue-assignment-fields';
+export const ASSIGNMENT_FORM_LEGEND_ID =
+    'chromatic-dialogue-assignment-legend';
 export const ASSIGNMENT_COLOR_PICKER_ID =
     'chromatic-dialogue-assignment-color-picker';
 export const ASSIGNMENT_HEX_COLOR_INPUT_ID =
@@ -27,5 +29,7 @@ export const ASSIGNMENT_NAME_INPUT_ID =
     'chromatic-dialogue-assignment-name';
 export const ASSIGNMENT_ADD_BUTTON_ID =
     'chromatic-dialogue-assignment-add';
+export const ASSIGNMENT_CANCEL_EDIT_BUTTON_ID =
+    'chromatic-dialogue-assignment-cancel-edit';
 export const ASSIGNMENT_FEEDBACK_ID =
     'chromatic-dialogue-assignment-feedback';

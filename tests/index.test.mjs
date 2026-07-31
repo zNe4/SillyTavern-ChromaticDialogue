@@ -290,12 +290,17 @@ test('initializes once and reflects the active chat', async (t) => {
     );
 
     const assignmentActions = assignmentRow.children[3];
-    const [editButton] = assignmentActions.children;
+    const [editButton, deleteButton] = assignmentActions.children;
 
     assert.equal(editButton.textContent, 'Edit');
     assert.equal(
         editButton.attributes.get('aria-label'),
         'Edit assignment c1',
+    );
+    assert.equal(deleteButton.textContent, 'Delete');
+    assert.equal(
+        deleteButton.attributes.get('aria-label'),
+        'Delete assignment c1',
     );
 
     await appInitializedHandlers[0]();

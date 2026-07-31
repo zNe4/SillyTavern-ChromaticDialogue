@@ -5,15 +5,15 @@
 
 ## Project status
 
-- Current phase: **Phase 4 — Manual assignment CRUD**
+- Current phase: **Phase 4 complete — Phase 5 next**
 - Target SillyTavern version: **1.18.0+**
 - Reference installation: **1.18.0-1-g8172dcd0e**
 - First release target: **v0.1.0**
-- Implementation status: **Phases 1 through 3 complete; Phase 4 in progress through edit selection**
+- Implementation status: **Phases 1 through 4 complete**
 - Repository: **https://github.com/zNe4/SillyTavern-ChromaticDialogue**
-- Latest implementation checkpoint: **Phase 4 partial — assignment rendering, form controls, validation, add persistence, and edit selection**
-- Verification baseline: **33 passing tests covering domain, storage, CSS generation/runtime, lifecycle, assignment rendering, controls, validation, add persistence, and edit selection**
-- Next action: Commit and push this verified partial Phase 4 checkpoint, then continue edit persistence and deletion under the revised workflow.
+- Latest implementation checkpoint: **Phase 4 complete — manual add, immutable-ID edit, confirmed deletion, immediate CSS refresh, and persistence safety**
+- Verification baseline: **48 passing tests plus a Firefox add → edit → reload → delete → reload gate with complete disposable-data cleanup**
+- Next action: Commit and push the verified Phase 4 completion, then begin Phase 5 chat-change synchronization.
 
 Update this section whenever a phase begins or finishes.
 
@@ -745,8 +745,7 @@ c43821b feat: add dynamic dialogue CSS manager
 
 ### Phase 4 — Manual assignment CRUD
 
-Status: **In progress — add persistence and edit selection are verified;
-edit persistence and deletion remain**
+Status: **Complete**
 
 Tasks:
 
@@ -755,10 +754,10 @@ Tasks:
 - [x] Synchronize hex field and color picker.
 - [x] Add live preview.
 - [x] Implement add.
-- [ ] Implement edit.
+- [x] Implement edit.
   - [x] Load a selected assignment into the form without saving.
-  - [ ] Persist validated edits and refresh CSS and panel state.
-- [ ] Implement delete.
+  - [x] Persist validated edits and refresh CSS and panel state.
+- [x] Implement delete.
 - [x] Reject duplicate IDs.
 - [x] Provide clear validation feedback.
 - [x] Disable editing without an active chat.
@@ -767,17 +766,17 @@ Tasks:
 
 Exit criteria:
 
-- [ ] All assignment management is possible without DevTools or manual JSON
+- [x] All assignment management is possible without DevTools or manual JSON
       edits.
 - [x] Failed validation never alters the existing mapping.
 - [x] Successful add operations persist and update CSS immediately.
-- [ ] Successful edit and delete operations persist and update CSS immediately.
+- [x] Successful edit and delete operations persist and update CSS immediately.
 - [x] The implemented interface remains usable on a phone.
 
-Checkpoint commit:
+Planned completion commit:
 
 ```text
-feat: add assignment management through edit selection
+feat: complete manual assignment CRUD
 ```
 
 ### Phase 5 — Chat-change synchronization
@@ -1202,4 +1201,14 @@ Initial entry:
 - Decisions changed: Create and push a verified partial Phase 4 checkpoint before changing the development workflow.
 - Additional verification: No polling, MutationObserver, background interval, animation loop, continuous DOM scan, message traversal, or message-content rewrite was introduced.
 - Next: Commit and push this checkpoint, then continue Phase 4 with edit persistence and deletion under the revised workflow.
+```
+
+```text
+2026-07-31 — Phase 4 completion
+- Completed: Added immutable-ID edit persistence, explicit cancellation, confirmed deletion, same-chat and same-assignment revalidation, pending-operation control locking, immediate panel/CSS refresh, empty-state cleanup, and safe persistence rollback.
+- Tested: 48/48 automated tests; focused storage/edit/delete regression; add, edit, reload persistence, confirmed delete, and delete-after-reload in Firefox; disposable-ID cleanup; preservation of pre-existing assignments; and cleanup of an interrupted test run in its originating chat.
+- Problems found: SillyTavern does not reopen the last active chat after restart, so the live harness correctly reported a transient wrong-chat failure until the originating chat was reopened. The installed extension's independent Git HEAD did not describe its synchronized runtime, so live synchronization validation now compares exact file contents and hashes instead.
+- Decisions changed: Assignment IDs remain immutable during edit; deletion always requires confirmation and revalidates both chat identity and the confirmed assignment snapshot; all assignment actions lock while persistence is pending; roadmap completion requires both automated and live-browser evidence.
+- Additional verification: No polling, MutationObserver, background interval, animation loop, continuous DOM scan, message traversal, or message-content rewrite was introduced. All disposable c99 data was removed and the original c1 test mapping remained unchanged.
+- Next: Commit and push the verified Phase 4 completion, then begin Phase 5 chat-change synchronization.
 ```

@@ -330,6 +330,99 @@ test('valid state is normalized and persisted in the expected chat', async () =>
     assert.equal(candidate.assignments.c1.color, ' #a1b2c3 ');
 });
 
+test('a failed persistence restores the previous in-memory state', async () => {
+    const previousState = {
+        schemaVersion: 1,
+        assignments: {
+            c1: {
+                name: 'Original',
+                color: '#111111',
+            },
+        },
+    };
+    const chatMetadata = {
+        [CHAT_METADATA_KEY]: previousState,
+        unrelated: {
+            preserved: true,
+        },
+    };
+
+    globalThis.SillyTavern = {
+        getContext() {
+            return {
+                chatId: 'chat-a',
+                chatMetadata,
+
+                async saveMetadata() {
+                    assert.notStrictEqual(
+                        chatMetadata[CHAT_METADATA_KEY],
+                        previousState,
+                    );
+                    throw new Error('Persistence failed');
+                },
+            };
+        },
+    };
+
+    await assert.rejects(
+        saveActiveChatState('chat-a', {
+            schemaVersion: 1,
+            assignments: {
+                c1: {
+                    name: 'Edited',
+                    color: '#222222',
+                },
+            },
+        }),
+        /Persistence failed/,
+    );
+
+    assert.strictEqual(
+        chatMetadata[CHAT_METADATA_KEY],
+        previousState,
+    );
+    assert.deepEqual(chatMetadata.unrelated, {
+        preserved: true,
+    });
+});
+
+test('a failed first persistence removes its introduced in-memory state', async () => {
+    const chatMetadata = {};
+
+    globalThis.SillyTavern = {
+        getContext() {
+            return {
+                chatId: 'chat-a',
+                chatMetadata,
+
+                async saveMetadata() {
+                    assert.equal(
+                        Object.hasOwn(
+                            chatMetadata,
+                            CHAT_METADATA_KEY,
+                        ),
+                        true,
+                    );
+                    throw new Error('Persistence failed');
+                },
+            };
+        },
+    };
+
+    await assert.rejects(
+        saveActiveChatState('chat-a', {
+            schemaVersion: 1,
+            assignments: {},
+        }),
+        /Persistence failed/,
+    );
+
+    assert.equal(
+        Object.hasOwn(chatMetadata, CHAT_METADATA_KEY),
+        false,
+    );
+});
+
 test('a chat switch while persistence is pending is reported safely', async () => {
     const originalMetadata = {};
     const newChatMetadata = {};

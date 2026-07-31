@@ -86,10 +86,13 @@
 
 .chromatic-dialogue-assignment-actions {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
+    gap: 0.35rem;
 }
 
-.chromatic-dialogue-assignment-edit {
+.chromatic-dialogue-assignment-edit,
+.chromatic-dialogue-assignment-delete {
     white-space: nowrap;
 }
 
@@ -158,7 +161,16 @@
 .chromatic-dialogue-form-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 0.5rem;
     margin-top: 0.75rem;
+}
+
+.chromatic-dialogue-form-actions .menu_button[hidden] {
+    display: none !important;
+}
+
+.chromatic-dialogue-field input[readonly] {
+    opacity: 0.75;
 }
 
 .chromatic-dialogue-feedback {

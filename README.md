@@ -8,10 +8,10 @@ It is designed to associate compact dialogue markers such as
 messages and outgoing prompts unchanged.
 
 > [!IMPORTANT]
-> Chromatic Dialogue is currently in early development. Phase 1 provides the
-> extension scaffold, settings panel, lifecycle handling, and active-chat
-> detection. Assignment management, persistence, dynamic styles, and proposal
-> detection are not implemented yet.
+> Chromatic Dialogue is currently in early development. Phases 1 through 4
+> provide per-chat storage, dynamic dialogue styles, and complete manual
+> assignment management. AI proposals, inherited defaults, import/export, and
+> release hardening are not implemented yet.
 
 ## Intended workflow
 
@@ -48,16 +48,37 @@ Once a release is available:
 
 5. Complete the installation and reload SillyTavern.
 
-## Current Phase 1 behavior
+## Current behavior
 
-The current scaffold:
+The current implementation:
 
 * Loads through SillyTavern's extension lifecycle.
 * Mounts its settings panel only once.
 * Registers lifecycle listeners only once.
 * Shows a no-chat state when no chat is active.
 * Shows an empty-assignment state when a chat is active.
+* Stores independent `c1` through `c99` assignments in each chat's metadata.
+* Adds, edits, and deletes assignments through the Extensions panel.
+* Keeps assignment IDs immutable while editing.
+* Requires confirmation before deletion.
+* Validates names, IDs, and six-digit hexadecimal colors before persistence.
+* Regenerates scoped dialogue CSS immediately after successful changes.
+* Restores saved mappings after reload and refreshes them when chats change.
+* Leaves stored messages and outgoing prompts unchanged.
+* Performs no polling, message-DOM scanning, or background observation.
 * Remains independent of build tools and runtime dependencies.
+
+## Managing assignments
+
+1. Open a chat.
+2. Open **Extensions → Chromatic Dialogue**.
+3. Enter an unused ID from `c1` through `c99`, a character name, and a color.
+4. Select **Add assignment**.
+5. Use **Edit** to change the name or color without changing the marker ID.
+6. Use **Delete** and confirm the prompt to remove an assignment.
+
+Successful changes are saved to the active chat and update generated dialogue
+styles immediately.
 
 ## Development
 
@@ -70,8 +91,10 @@ Run the automated tests with:
 npm test
 ```
 
-The test suite currently verifies lifecycle registration, concurrent-safe
-initialization, idempotent panel mounting, and active-chat state changes.
+The test suite currently verifies domain normalization, guarded per-chat
+persistence, generated CSS, lifecycle behavior, assignment rendering,
+validation, add/edit/delete operations, pending-save locking, chat-switch
+safety, persistence rollback, and ID reuse after deletion.
 
 ## Project structure
 
@@ -81,13 +104,20 @@ initialization, idempotent panel mounting, and active-chat state changes.
 │   └── regex-setup.md
 ├── src/
 │   ├── constants.js
+│   ├── domain.js
+│   ├── chat-store.js
+│   ├── style-manager.js
+│   ├── style-runtime.js
 │   └── panel.js
 ├── tests/
-│   └── index.test.mjs
+│   └── *.test.mjs
+├── scripts/
+│   └── archive-project.sh
 ├── global.d.ts
 ├── index.js
 ├── manifest.json
 ├── package.json
+├── roadmap.md
 ├── settings.html
 └── style.css
 ```
@@ -96,4 +126,3 @@ initialization, idempotent panel mounting, and active-chat state changes.
 
 Chromatic Dialogue is licensed under the
 [GNU Affero General Public License v3.0](LICENSE).
-

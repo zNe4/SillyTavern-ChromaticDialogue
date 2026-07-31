@@ -93,8 +93,28 @@ export async function saveActiveChatState(expectedChatId, candidate) {
         };
     }
 
-    context.chatMetadata[CHAT_METADATA_KEY] = state;
-    await context.saveMetadata();
+    const chatMetadata = context.chatMetadata;
+    const hadPreviousState = Object.prototype.hasOwnProperty.call(
+        chatMetadata,
+        CHAT_METADATA_KEY,
+    );
+    const previousState = chatMetadata[CHAT_METADATA_KEY];
+
+    chatMetadata[CHAT_METADATA_KEY] = state;
+
+    try {
+        await context.saveMetadata();
+    } catch (error) {
+        if (chatMetadata[CHAT_METADATA_KEY] === state) {
+            if (hadPreviousState) {
+                chatMetadata[CHAT_METADATA_KEY] = previousState;
+            } else {
+                delete chatMetadata[CHAT_METADATA_KEY];
+            }
+        }
+
+        throw error;
+    }
 
     const currentChatId = SillyTavern.getContext().chatId;
 
