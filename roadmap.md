@@ -9,12 +9,11 @@
 - Target SillyTavern version: **1.18.0+**
 - Reference installation: **1.18.0-1-g8172dcd0e**
 - First release target: **v0.1.0**
-- Implementation status: **Phases 1 through 3 complete; Phase 4 not started**
+- Implementation status: **Phases 1 through 3 complete; Phase 4 in progress through edit selection**
 - Repository: **https://github.com/zNe4/SillyTavern-ChromaticDialogue**
-- Latest implementation checkpoint: **`c43821b` — `feat: add dynamic dialogue CSS manager`**
-- Verification baseline: **28 passing tests: 10 domain, 9 storage, 7 style-manager, 1 style-runtime, and 1 lifecycle**
-- Next action: Begin Phase 4 manual assignment CRUD with one small,
-  independently verified change.
+- Latest implementation checkpoint: **Phase 4 partial — assignment rendering, form controls, validation, add persistence, and edit selection**
+- Verification baseline: **33 passing tests covering domain, storage, CSS generation/runtime, lifecycle, assignment rendering, controls, validation, add persistence, and edit selection**
+- Next action: Commit and push this verified partial Phase 4 checkpoint, then continue edit persistence and deletion under the revised workflow.
 
 Update this section whenever a phase begins or finishes.
 
@@ -746,32 +745,39 @@ c43821b feat: add dynamic dialogue CSS manager
 
 ### Phase 4 — Manual assignment CRUD
 
+Status: **In progress — add persistence and edit selection are verified;
+edit persistence and deletion remain**
+
 Tasks:
 
-- [ ] Render current assignments.
-- [ ] Add assignment form.
-- [ ] Synchronize hex field and color picker.
-- [ ] Add live preview.
-- [ ] Implement add.
+- [x] Render current assignments.
+- [x] Add assignment form.
+- [x] Synchronize hex field and color picker.
+- [x] Add live preview.
+- [x] Implement add.
 - [ ] Implement edit.
+  - [x] Load a selected assignment into the form without saving.
+  - [ ] Persist validated edits and refresh CSS and panel state.
 - [ ] Implement delete.
-- [ ] Reject duplicate IDs.
-- [ ] Provide clear validation feedback.
-- [ ] Disable editing without an active chat.
-- [ ] Ensure names are rendered as text.
-- [ ] Build responsive mobile layout.
+- [x] Reject duplicate IDs.
+- [x] Provide clear validation feedback.
+- [x] Disable editing without an active chat.
+- [x] Ensure names are rendered as text.
+- [x] Build responsive mobile layout.
 
 Exit criteria:
 
-- All assignment management is possible without DevTools or manual JSON edits.
-- Failed validation never alters the existing mapping.
-- Successful operations persist and update CSS immediately.
-- The interface remains usable on a phone.
+- [ ] All assignment management is possible without DevTools or manual JSON
+      edits.
+- [x] Failed validation never alters the existing mapping.
+- [x] Successful add operations persist and update CSS immediately.
+- [ ] Successful edit and delete operations persist and update CSS immediately.
+- [x] The implemented interface remains usable on a phone.
 
-Suggested commit:
+Checkpoint commit:
 
 ```text
-feat: add assignment management panel
+feat: add assignment management through edit selection
 ```
 
 ### Phase 5 — Chat-change synchronization
@@ -1186,4 +1192,14 @@ Initial entry:
 - Additional verification: No message content was modified; no polling, MutationObserver, background interval, animation loop, or continuous DOM scan was introduced; no new red browser-console errors appeared.
 - Checkpoint: c43821b feat: add dynamic dialogue CSS manager.
 - Next: Create and push the Phase 3 implementation commit, record its checkpoint, then begin Phase 4 manual assignment CRUD.
+```
+
+```text
+2026-07-31 — Phase 4 partial checkpoint
+- Completed: Added read-only assignment rendering, the assignment form, picker and hex synchronization, live preview, validation, duplicate rejection, no-chat disabling, safe text rendering, responsive layout, add persistence, and edit selection/form population.
+- Tested: 33/33 automated tests; live assignment rendering, form states, color synchronization, preview behavior, validation, add persistence and reload, numeric ordering, generated CSS updates, edit selection, fresh-state rereading, mobile layout, cleanup, and browser-console behavior.
+- Problems found: No blocker remains for the completed scope. Edit persistence and deletion are not yet implemented.
+- Decisions changed: Create and push a verified partial Phase 4 checkpoint before changing the development workflow.
+- Additional verification: No polling, MutationObserver, background interval, animation loop, continuous DOM scan, message traversal, or message-content rewrite was introduced.
+- Next: Commit and push this checkpoint, then continue Phase 4 with edit persistence and deletion under the revised workflow.
 ```

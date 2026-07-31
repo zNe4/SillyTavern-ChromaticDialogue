@@ -29,6 +29,40 @@ test('initializes once and reflects the active chat', async (t) => {
         hidden: true,
     };
 
+    const assignmentList = {
+        hidden: true,
+        children: [],
+
+        replaceChildren(...children) {
+            this.children = children;
+        },
+    };
+
+    const assignmentFormFieldset = {
+        disabled: true,
+    };
+
+    function createMockElement(tagName) {
+        return {
+            tagName: tagName.toUpperCase(),
+            className: '',
+            dataset: {},
+            textContent: '',
+            children: [],
+            attributes: new Map(),
+
+            addEventListener() {},
+
+            setAttribute(name, value) {
+                this.attributes.set(name, String(value));
+            },
+
+            append(...children) {
+                this.children.push(...children);
+            },
+        };
+    }
+
     const settingsContainer = {
         insertAdjacentHTML(position, html) {
             assert.equal(position, 'beforeend');
@@ -45,6 +79,20 @@ test('initializes once and reflects the active chat', async (t) => {
 
                     if (selector === '#chromatic-dialogue-empty-state') {
                         return emptyChatState;
+                    }
+
+                    if (
+                        selector ===
+                        '#chromatic-dialogue-assignment-list'
+                    ) {
+                        return assignmentList;
+                    }
+
+                    if (
+                        selector ===
+                        '#chromatic-dialogue-assignment-fields'
+                    ) {
+                        return assignmentFormFieldset;
                     }
 
                     return null;
@@ -93,15 +141,16 @@ test('initializes once and reflects the active chat', async (t) => {
 
             return null;
         },
-
         createElement(tagName) {
-            assert.equal(tagName, 'style');
+            if (tagName === 'style') {
+                return {
+                    id: '',
+                    tagName: 'STYLE',
+                    textContent: '',
+                };
+            }
 
-            return {
-                id: '',
-                tagName: 'STYLE',
-                textContent: '',
-            };
+            return createMockElement(tagName);
         },
     };
 
@@ -169,7 +218,7 @@ test('initializes once and reflects the active chat', async (t) => {
             schemaVersion: 1,
             assignments: {
                 c1: {
-                    name: 'Alice',
+                    name: '<img src=x onerror=alert(1)>',
                     color: '#56B4E9',
                 },
             },
@@ -216,7 +265,38 @@ test('initializes once and reflects the active chat', async (t) => {
 
     assert.equal(panel.dataset.chatState, 'active');
     assert.equal(noChatState.hidden, true);
-    assert.equal(emptyChatState.hidden, false);
+    assert.equal(emptyChatState.hidden, true);
+    assert.equal(assignmentList.hidden, false);
+    assert.equal(assignmentList.children.length, 1);
+
+    assert.equal(assignmentFormFieldset.disabled, false);
+
+    const [assignmentRow] = assignmentList.children;
+
+    assert.equal(assignmentRow.dataset.assignmentId, 'c1');
+    assert.equal(
+        assignmentRow.attributes.get('role'),
+        'listitem',
+    );
+    assert.deepEqual(
+        assignmentRow.children
+            .slice(0, 3)
+            .map((element) => element.textContent),
+        [
+            'c1',
+            '<img src=x onerror=alert(1)>',
+            '#56B4E9',
+        ],
+    );
+
+    const assignmentActions = assignmentRow.children[3];
+    const [editButton] = assignmentActions.children;
+
+    assert.equal(editButton.textContent, 'Edit');
+    assert.equal(
+        editButton.attributes.get('aria-label'),
+        'Edit assignment c1',
+    );
 
     await appInitializedHandlers[0]();
 
@@ -237,6 +317,34 @@ test('initializes once and reflects the active chat', async (t) => {
     assert.equal(noChatState.hidden, false);
     assert.equal(emptyChatState.hidden, true);
 
+    assert.equal(assignmentFormFieldset.disabled, true);
+
+    assert.equal(assignmentList.hidden, true);
+    assert.deepEqual(assignmentList.children, []);
+
     assert.equal(styleAppendCount, 1);
+    assert.equal(generatedStyle.textContent, '');
+
+    activeChatId = 'Unsupported chat';
+    activeChatMetadata = {
+        [CHAT_METADATA_KEY]: {
+            schemaVersion: 2,
+            assignments: {
+                c1: {
+                    name: 'Do not interpret',
+                    color: '#FFFFFF',
+                },
+            },
+        },
+    };
+
+    await chatChangedHandlers[0]();
+
+    assert.equal(panel.dataset.chatState, 'active');
+    assert.equal(noChatState.hidden, true);
+    assert.equal(emptyChatState.hidden, false);
+    assert.equal(assignmentList.hidden, true);
+    assert.deepEqual(assignmentList.children, []);
+    assert.equal(assignmentFormFieldset.disabled, true);
     assert.equal(generatedStyle.textContent, '');
 });

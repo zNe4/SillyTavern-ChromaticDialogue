@@ -41,6 +41,104 @@
                 ></span>
                 <p>This chat has no dialogue color assignments yet.</p>
             </div>
+            <div
+                id="chromatic-dialogue-assignment-list"
+                class="chromatic-dialogue-assignment-list"
+                role="list"
+                aria-label="Dialogue color assignments"
+                hidden
+            ></div>
+            <form
+                id="chromatic-dialogue-assignment-form"
+                class="chromatic-dialogue-form"
+                novalidate
+            >
+                <fieldset
+                    id="chromatic-dialogue-assignment-fields"
+                    class="chromatic-dialogue-form-fields"
+                    disabled
+                >
+                    <legend>Add assignment</legend>
+
+                    <div class="chromatic-dialogue-form-grid">
+                        <label class="chromatic-dialogue-field">
+                            <span>Assignment ID</span>
+                            <input
+                                id="chromatic-dialogue-assignment-id"
+                                class="text_pole"
+                                type="text"
+                                placeholder="c1"
+                                maxlength="3"
+                                autocomplete="off"
+                                spellcheck="false"
+                            >
+                        </label>
+
+                        <label class="chromatic-dialogue-field">
+                            <span>Name</span>
+                            <input
+                                id="chromatic-dialogue-assignment-name"
+                                class="text_pole"
+                                type="text"
+                                autocomplete="off"
+                            >
+                        </label>
+
+                        <label class="chromatic-dialogue-field">
+                            <span>Color picker</span>
+                            <input
+                                id="chromatic-dialogue-assignment-color-picker"
+                                class="chromatic-dialogue-color-picker"
+                                type="color"
+                                value="#56B4E9"
+                            >
+                        </label>
+
+                        <label class="chromatic-dialogue-field">
+                            <span>Hex color</span>
+                            <input
+                                id="chromatic-dialogue-assignment-color"
+                                class="text_pole"
+                                type="text"
+                                value="#56B4E9"
+                                maxlength="7"
+                                autocomplete="off"
+                                spellcheck="false"
+                            >
+                        </label>
+                    </div>
+
+                    <div class="chromatic-dialogue-preview">
+                        <span class="chromatic-dialogue-preview-label">
+                            Live preview
+                        </span>
+                        <span
+                            id="chromatic-dialogue-assignment-color-preview"
+                            class="chromatic-dialogue-preview-text"
+                        >
+                            This is how dialogue text will look.
+                        </span>
+                    </div>
+
+                    <div class="chromatic-dialogue-form-actions">
+                        <button
+                            id="chromatic-dialogue-assignment-add"
+                            class="menu_button"
+                            type="button"
+                        >
+                            Add assignment
+                        </button>
+                    </div>
+                </fieldset>
+
+                <p
+                    id="chromatic-dialogue-assignment-feedback"
+                    class="chromatic-dialogue-feedback"
+                    role="status"
+                    aria-live="polite"
+                    hidden
+                ></p>
+            </form>
         </div>
     </div>
 </div>
