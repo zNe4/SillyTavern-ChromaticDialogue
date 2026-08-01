@@ -5,15 +5,15 @@
 
 ## Project status
 
-- Current phase: **Phase 6 complete — Phase 7 documentation and v0.1.0 preparation next**
+- Current phase: **Phase 7 in progress — v0.1.0 pre-push documentation acceptance passed**
 - Target SillyTavern version: **1.18.0+**
 - Reference installation: **1.18.0-1-g8172dcd0e**
 - First release target: **v0.1.0**
-- Implementation status: **Phases 1 through 6 complete; the published implementation passed update and fresh-install acceptance**
+- Implementation status: **Phases 1 through 6 complete; Phase 7 documentation/version/screenshots accepted in Firefox, responsive layouts, and focused physical Android without runtime changes**
 - Repository: **https://github.com/zNe4/SillyTavern-ChromaticDialogue**
 - Latest implementation checkpoint: **`1d6864c0f35f9809cbf124f3deea0dbcc26a4d73` — Phase 6 hardening published and distribution-accepted**
-- Verification baseline: **53 passing tests; Firefox 153 desktop/NanoGPT; six themes; 390 × 844 and 360 × 780 responsive gates; physical Samsung Note 20 Ultra/Opera/Termux usability; real Phase 5 update and fresh GitHub installation; exact cleanup**
-- Next action: Commit and push the Phase 6 completion record, prove local/remote equality, then begin Phase 7 release documentation and v0.1.0 preparation.
+- Verification baseline: **53 passing tests; Firefox 153 desktop/NanoGPT; six themes; README-led Firefox and Regex walkthrough; 390 × 844 and 360 × 780 responsive gates; physical Samsung Note 20 Ultra/Opera/Termux usability and documentation confirmation; real Phase 5 update and fresh GitHub installation; exact cleanup**
+- Next action: Review and apply the Phase 7 documentation-acceptance evidence record, then normally commit and push the accepted candidate before public distribution gates.
 
 Update this section whenever a phase begins or finishes.
 
@@ -31,7 +31,11 @@ The central design is:
 AI writes:
 [c1]Dialogue[/c]
 
-SillyTavern's built-in Regex extension displays:
+The built-in Regex replacement emits:
+
+<span class="cd-c1">“Dialogue”</span>
+
+SillyTavern automatically prefixes and renders:
 <span class="custom-cd-c1">“Dialogue”</span>
 
 Chromatic Dialogue stores:
@@ -139,6 +143,7 @@ SillyTavern-ChromaticDialogue/
 ├── style.css
 ├── global.d.ts
 ├── package.json
+├── CHANGELOG.md
 ├── roadmap.md
 ├── src/
 │   ├── constants.js
@@ -168,6 +173,7 @@ SillyTavern-ChromaticDialogue/
 | `style.css` | Static panel layout and mobile styles |
 | `global.d.ts` | SillyTavern global types for editor/LSP support |
 | `package.json` | Local syntax and Node test commands; no runtime dependency bundle |
+| `CHANGELOG.md` | Durable user-visible release history |
 | `roadmap.md` | Living implementation plan, decisions, and verified checkpoints |
 | `src/constants.js` | Metadata key, DOM IDs, selector, and limits |
 | `src/domain.js` | Schema, validation, normalization, and pure transformations |
@@ -294,8 +300,8 @@ chosen before the manifest is created.
 - Tag stable releases, beginning with `v0.1.0`.
 - Test Extension Manager update behavior before announcing v0.1.0.
 - Avoid force-pushing published release tags.
-- GitHub Releases are optional but useful for changelogs; they are not required
-  for installation.
+- Publish a GitHub Release page for `v0.1.0` after acceptance and user approval;
+  it is useful release history but is not required for installation.
 
 ### Optional official catalog submission
 
@@ -442,8 +448,11 @@ Find:
 Replace:
 
 ```html
-<span class="custom-cd-c$1">“$2”</span>
+<span class="cd-c$1">“$2”</span>
 ```
+
+SillyTavern automatically prefixes that authored class in rendered chat, so
+Chromatic Dialogue targets the resulting `custom-cd-cN` DOM class.
 
 ### Required configuration
 
@@ -931,28 +940,41 @@ docs: record Phase 6 installation acceptance
 
 ### Phase 7 — Documentation and v0.1.0
 
-Status: **Next — ready to begin after the Phase 6 completion checkpoint**
+Status: **In progress — pre-push documentation/browser/mobile acceptance passed; publication and distribution pending**
 
 Tasks:
 
-- [ ] Complete README.
-- [ ] Complete Regex setup guide.
-- [ ] Document direct GitHub installation.
-- [ ] Document local development setup.
-- [ ] Document usage with examples.
-- [ ] Document Max Depth behavior.
-- [ ] Document failure behavior when Regex is missing.
-- [ ] Document current limitations.
-- [ ] Add screenshots after UI stabilizes.
-- [ ] Set manifest version to `0.1.0`.
-- [ ] Create `CHANGELOG.md` if release notes warrant it.
-- [ ] Tag `v0.1.0`.
-- [ ] Verify a fresh installation from the tag/default branch.
+- [x] Complete the text-only README candidate.
+- [x] Complete the text-only Regex setup guide candidate.
+- [x] Document direct GitHub installation and installation scope.
+- [x] Document update, disable/re-enable, and safe uninstall expectations.
+- [x] Document local development setup.
+- [x] Document usage with one, multiple, and multiline examples.
+- [x] Document Max Depth `50`, Unlimited, older messages, and streaming.
+- [x] Document safe failure behavior when Regex is missing or disabled.
+- [x] Document current limitations and troubleshooting.
+- [x] Set manifest and package versions to `0.1.0` while retaining schema 1.
+- [x] Create `CHANGELOG.md` and a matching GitHub Release-note draft.
+- [x] Capture and approve authentic dark, light, and narrow/mobile screenshots.
+- [x] Add approved screenshots and stable relative README links.
+- [x] Correct **Replace With** to authored class `cd-c$1` while documenting
+      SillyTavern's automatic rendered `custom-` prefix.
+- [x] Complete the README-led Firefox and responsive-layout walkthrough.
+- [x] Complete focused physical-Android documentation confirmation.
+- [ ] Normally commit and push the accepted candidate.
+- [ ] Verify real Extension Manager update and fresh default-branch installation.
+- [ ] Create and verify annotated tag `v0.1.0` at the accepted commit.
+- [ ] Create the approved GitHub Release page matching the tag and changelog.
+- [ ] Verify installation from the exact tag/default branch.
+- [ ] Record the completed release and point the roadmap to Phase 8.
 
 Exit criteria:
 
 - A new user can install and configure the extension using only the README.
 - The documented behavior matches the shipped behavior.
+- Approved authentic dark, light, and mobile screenshots match the final UI.
+- All automated, documentation-led browser/mobile, and distribution gates pass.
+- Annotated `v0.1.0` and its GitHub Release point to the accepted commit.
 - v0.1.0 is installable, usable, and recoverable without manual file editing.
 
 ---
@@ -1173,6 +1195,11 @@ The project is not complete merely because the UI appears to work once.
 | 2026-08-01 | Use physical Android as a human-only usability gate and defer unavailable Chromium desktop | Phone automation was not required for meaningful touch/layout acceptance, while unavailable browser coverage must not be reported as passed |
 | 2026-08-01 | Keep accepted in-panel CRUD feedback and track optional platform toasts as a future enhancement | Adding new notification integration after interaction acceptance is not required to close Phase 6 and should retain the accessible status channel |
 | 2026-08-01 | Require both a real Extension Manager fast-forward and a removed/recreated shallow GitHub clone for distribution acceptance | Git hashes, reflogs, exact file manifests, retained metadata, browser behavior, and cleanup distinguish real update/install paths from a manual checkout or file copy |
+| 2026-08-01 | Retain SillyTavern 1.18.0+ and recommended Regex Max Depth 50 for v0.1.0 | Both values have accepted evidence; Unlimited remains the documented user choice for formatting the entire visible transcript |
+| 2026-08-01 | Align manifest/package at 0.1.0, add a changelog, and publish an annotated tag plus matching GitHub Release only after acceptance | Keeps version surfaces and durable release history coherent without making a binary asset part of normal installation |
+| 2026-08-01 | Treat authentic dark, light, and mobile screenshots as a privacy-approved sub-batch and retain the Chromium-unavailable deferral | Screenshots require human selection, while unrun browser coverage must not be reported as passed or block the evidence-backed release |
+| 2026-08-01 | Keep v0.1.0 limited to documentation, versioning, and release acceptance | AI proposals, inherited defaults, import/export, toolbar shortcuts, localization, contrast tooling, group semantics, and success toasts remain post-MVP work |
+| 2026-08-01 | Distinguish authored Regex class `cd-cN` from rendered DOM class `custom-cd-cN` | SillyTavern adds `custom-` automatically during rendering; users must enter `cd-c$1`, while the extension's existing CSS correctly targets the prefixed rendered class |
 
 ---
 
@@ -1196,13 +1223,19 @@ Resolve before the indicated milestone:
 
 ### Before v0.1.0
 
-- [ ] Whether Max Depth `50` is the best mobile default.
+- [x] Retain Max Depth `50` as the balanced recommendation; Unlimited formats
+      the entire visible transcript. This remains a user-managed Regex setting,
+      not an extension-enforced mobile default.
 - [x] Exact streaming behavior: a compact marker may remain raw/partial while
       streaming and transforms once its complete valid closing tag is present.
 
-- [ ] Whether to support only `1.18.0+` or test older releases.
-- [ ] Whether a GitHub Release page is useful in addition to the Git tag.
-- [ ] Final screenshots and extension description.
+- [x] Support and document SillyTavern `1.18.0+`; do not expand the compatibility
+      matrix immediately before the first release.
+- [x] Publish a concise GitHub Release page in addition to the annotated tag;
+      no binary asset is required for normal installation.
+- [x] Final concise extension description for README and release notes.
+- [x] Final privacy-approved screenshots: Dark Lite desktop edit, Violet Glass
+      Light desktop add, and Dark Lite Firefox RDM narrow/mobile layouts.
 
 ### Future usability enhancements
 
@@ -1336,7 +1369,44 @@ Initial entry:
 - Completed: Normally published the reviewed hardening implementation at 1d6864c0f35f9809cbf124f3deea0dbcc26a4d73; updated a disposable global installation from public Phase 5 through SillyTavern's real Extension Manager; removed it; and installed a new global depth-1 clone from the public GitHub URL.
 - Tested: Existing c1 metadata compatibility, panel and manifest loading, basic CRUD, reload persistence, exactly one generated style element, zero attributable console errors, cleanup, 31/31 project-file identity, 20/20 syntax checks, and 53/53 tests for both the updated and fresh installations.
 - Problems found: The first update capture used PASS for three measured observation fields that required exact values 1, 0, and YES. Correcting only those evidence values made the retry pass; no product, update, or test failure occurred. Chromium desktop remains explicitly deferred because it is unavailable.
-- Decisions changed: Phase 6 distribution acceptance requires both the real Phase 5-to-Phase 6 git-pull transition and a newly cloned shallow main installation; manifest version remains 0.0.1 until Phase 7.
+- Decisions changed: Phase 6 distribution acceptance requires both the real Phase 5-to-Phase 6 git-pull transition and a newly cloned shallow main installation; the manifest remained at its aligned pre-release version until Phase 7.
 - Checkpoint: 1d6864c fix: harden MVP behavior across desktop and mobile.
 - Next: Commit and push this Phase 6 completion record, verify clean local/remote equality, then begin Phase 7 documentation and v0.1.0 release preparation.
+```
+
+```text
+2026-08-01 — Phase 7 Stage A text/version candidate
+- Completed: Audited the exact Phase 6 tree; expanded first-time installation, usage, update/uninstall, Max Depth, failure, limitation, troubleshooting, and local-development documentation; aligned manifest/package at 0.1.0; created CHANGELOG.md and a matching GitHub Release-note draft; resolved the compatibility, depth, release-page, browser, and v0.1.0 scope decisions.
+- Tested: Outer and nested archive safety and checksums; exact 31-file Phase 6 reconstruction; public main/commit/tree/parent and absent v0.1.0 tag; exact six-file candidate whitelist; whitespace and local Markdown links; version/schema/manifest invariants; 20/20 syntax checks; and 53/53 automated tests before and after the text/version changes.
+- Problems found: The prior README lacked release-ready update/uninstall, examples, troubleshooting, Max Depth, missing-Regex, limitation, screenshot, and complete local-development guidance. The roadmap still pointed to the already completed Phase 6 documentation commit and retained three now-resolved pre-release decisions.
+- Decisions changed: Accepted the Phase 7 handoff defaults unchanged. Authentic screenshots remain a separate privacy-approved sub-batch, and no runtime/schema/Regex-protocol change belongs in the text candidate.
+- Next: Review, verify, and apply the exact text/version candidate; then capture and approve the three authentic screenshots before documentation-led browser/mobile and distribution acceptance.
+```
+
+```text
+2026-08-01 — Phase 7 screenshot asset candidate
+- Completed: Approved three authentic privacy-safe captures for Dark Lite desktop edit, Violet Glass Light desktop add, and Dark Lite Firefox RDM 390 × 844 portrait; added the exact PNGs under docs/images with descriptive stable README links.
+- Tested: Returned-report ZIP safety, integrity, and PASS marker; byte-for-byte attachment/package identity; PNG dimensions, structure, and absence of private metadata; original-resolution visual privacy, authenticity, theme, viewport, readability, and crop review; unchanged runtime boundary; Markdown links; version/schema invariants; syntax checks; and the full automated suite.
+- Problems found: The light capture contains a faint non-private theme/background mark and the narrow capture retains a tiny lower viewport edge; neither obscures content, exposes private data, or misrepresents the extension, so both were approved without image editing.
+- Decisions changed: Final screenshots are now fixed to the three reviewed PNG hashes; preserve the authentic pixels and do not retouch or synthesize release documentation captures.
+- Next: Review and apply the screenshot asset sub-batch, then complete the README-led Firefox/responsive walkthrough and focused physical-Android documentation confirmation before distribution and release gates.
+```
+
+```text
+2026-08-01 — Phase 7 Regex replacement correction candidate
+- Completed: Corrected the user-authored Regex replacement from custom-cd-c$1 to cd-c$1 in the setup guide and roadmap; clarified the same two-stage transformation in README and troubleshooting text.
+- Tested: Exact three-document change boundary; authored cd-cN versus automatically prefixed rendered custom-cd-cN consistency; unchanged runtime selector and schema; local Markdown links; version invariants; syntax checks; and the full automated suite.
+- Problems found: The candidate incorrectly told users to include SillyTavern's automatic custom- prefix in Replace With, despite the accepted runtime correctly targeting the final rendered custom-cd-cN class.
+- Decisions changed: Treat cd-cN as the authored Regex class and custom-cd-cN as the post-render DOM contract. Runtime CSS remains unchanged.
+- Next: Review and apply this corrective sub-batch, then restart documentation-led Firefox/RDM and focused physical-Android acceptance from the corrected candidate.
+```
+
+```text
+2026-08-01 — Phase 7 documentation-led pre-push acceptance
+- Completed: Used the exact staged README and linked Regex guide as the operative instructions; reviewed installation/update/disable/uninstall/local-development prose; completed the Firefox real-chat workflow, both responsive gates, and focused physical-Android confirmation; and removed all disposable data while restoring original Regex settings.
+- Tested: Firefox 153.0 with SillyTavern 1.18.0-1-g8172dcd0e; authored cd-cN versus automatically rendered custom-cd-cN; exact Regex settings and single/multiple/multiline Test Mode; Quick start, raw storage, outgoing-off behavior, marker contract, CRUD/reuse/status, reload and cross-chat scope, Max Depth/Unlimited, final streaming state, disabled-Regex safe failure/recovery, troubleshooting, Dark Lite/Violet Glass Light nested quote color, three README screenshots, zero new attributable uncaught console errors, Firefox RDM at 390 × 844 and 360 × 780, and Samsung Note 20 Ultra portrait usability in Opera 100.2.5122.89341 against Termux.
+- Problems found: No documentation or product failure remained. Physical Android evidence remains an intentional human-usability confirmation; actual default-branch update/fresh-install verification remains pending until after push, and unavailable Chromium desktop remains explicitly deferred.
+- Decisions changed: The corrected authored cd-cN / rendered custom-cd-cN distinction is now documentation-led and live-accepted; no runtime, schema, test, dependency, or screenshot change is needed.
+- Cleanup: Disposable assignments/messages were removed, original Regex enabled/depth settings were restored, unrelated data was preserved, and the exact nine staged paths plus all 35 project hashes remained unchanged at HEAD/origin-main a330b70d06aae18c3031573a87e9b0a1e8e05c95.
+- Next: Apply this evidence record, normally commit and push the accepted Phase 7 candidate, then verify a real Extension Manager update and fresh default-branch installation before tagging and release.
 ```

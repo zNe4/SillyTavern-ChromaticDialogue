@@ -4,7 +4,7 @@
   "js": "index.js",
   "css": "style.css",
   "author": "zNe4",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "homePage": "https://github.com/zNe4/SillyTavern-ChromaticDialogue",
   "auto_update": true,
   "minimum_client_version": "1.18.0",
