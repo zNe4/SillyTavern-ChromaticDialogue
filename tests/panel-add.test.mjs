@@ -231,8 +231,8 @@ test('adds an assignment and refreshes the panel and CSS', async (t) => {
     assert.equal(addButton.listenerCount('click'), 1);
     assert.equal(assignmentList.children.length, 1);
 
-    idInput.value = ' C2 ';
-    nameInput.value = ' Alice ';
+    idInput.value = ' C9 ';
+    nameInput.value = ' Élodie 雪 👩🏽‍🚀 ';
     hexColorInput.value = '#123abc';
 
     await addButton.dispatch('click');
@@ -249,8 +249,8 @@ test('adds an assignment and refreshes the panel and CSS', async (t) => {
                     name: 'Existing',
                     color: '#FFFFFF',
                 },
-                c2: {
-                    name: 'Alice',
+                c9: {
+                    name: 'Élodie 雪 👩🏽‍🚀',
                     color: '#123ABC',
                 },
             },
@@ -261,10 +261,12 @@ test('adds an assignment and refreshes the panel and CSS', async (t) => {
     assert.equal(generatedStyle.id, GENERATED_STYLE_ID);
     assert.equal(
         generatedStyle.textContent,
-        '#chat .mes_text .custom-cd-c1 {\n' +
+        '#chat .mes_text .custom-cd-c1,\n' +
+            '#chat .mes_text .custom-cd-c1 q {\n' +
             '    color: #FFFFFF;\n' +
             '}\n\n' +
-            '#chat .mes_text .custom-cd-c2 {\n' +
+            '#chat .mes_text .custom-cd-c9,\n' +
+            '#chat .mes_text .custom-cd-c9 q {\n' +
             '    color: #123ABC;\n' +
             '}',
     );
@@ -278,14 +280,14 @@ test('adds an assignment and refreshes the panel and CSS', async (t) => {
         assignmentList.children.map(
             (row) => row.dataset.assignmentId,
         ),
-        ['c1', 'c2'],
+        ['c1', 'c9'],
     );
 
     assert.deepEqual(
         assignmentList.children[1].children
             .slice(0, 3)
             .map((element) => element.textContent),
-        ['c2', 'Alice', '#123ABC'],
+        ['c9', 'Élodie 雪 👩🏽‍🚀', '#123ABC'],
     );
 
     assert.equal(idInput.value, '');
@@ -295,7 +297,56 @@ test('adds an assignment and refreshes the panel and CSS', async (t) => {
     assert.equal(feedback.dataset.feedbackKind, 'valid');
     assert.equal(
         feedback.textContent,
-        'Assignment c2 added.',
+        'Assignment c9 added.',
+    );
+
+    idInput.value = 'c10';
+    nameInput.value = 'Ten';
+    hexColorInput.value = '#ABCDEF';
+
+    await addButton.dispatch('click');
+
+    const longUnicodeName =
+        'Long Unicode — ' + '非常に長い名前'.repeat(80);
+
+    idInput.value = 'c99';
+    nameInput.value = `  ${longUnicodeName}  `;
+    hexColorInput.value = '#fedcba';
+
+    await addButton.dispatch('click');
+
+    assert.equal(saveMetadataCalls, 3);
+    assert.deepEqual(
+        assignmentList.children.map(
+            (row) => row.dataset.assignmentId,
+        ),
+        ['c1', 'c9', 'c10', 'c99'],
+    );
+    assert.deepEqual(
+        context.chatMetadata[
+            CHAT_METADATA_KEY
+        ].assignments.c10,
+        {
+            name: 'Ten',
+            color: '#ABCDEF',
+        },
+    );
+    assert.deepEqual(
+        context.chatMetadata[
+            CHAT_METADATA_KEY
+        ].assignments.c99,
+        {
+            name: longUnicodeName,
+            color: '#FEDCBA',
+        },
+    );
+    assert.equal(
+        assignmentList.children[3].children[1].textContent,
+        longUnicodeName,
+    );
+    assert.match(
+        generatedStyle.textContent,
+        /\.custom-cd-c1 q \{[\s\S]*\.custom-cd-c9 q \{[\s\S]*\.custom-cd-c10 q \{[\s\S]*\.custom-cd-c99 q \{/,
     );
 
     idInput.value = 'c3';
@@ -308,7 +359,7 @@ test('adds an assignment and refreshes the panel and CSS', async (t) => {
 
     await Promise.resolve();
 
-    assert.equal(saveMetadataCalls, 2);
+    assert.equal(saveMetadataCalls, 4);
     assert.equal(addButton.disabled, true);
     assert.equal(typeof resolvePendingSave, 'function');
 
@@ -342,7 +393,8 @@ test('adds an assignment and refreshes the panel and CSS', async (t) => {
     );
     assert.equal(
         generatedStyle.textContent,
-        '#chat .mes_text .custom-cd-c1 {\n' +
+        '#chat .mes_text .custom-cd-c1,\n' +
+            '#chat .mes_text .custom-cd-c1 q {\n' +
             '    color: #E69F00;\n' +
             '}',
     );
@@ -379,7 +431,8 @@ test('adds an assignment and refreshes the panel and CSS', async (t) => {
     );
     assert.equal(
         generatedStyle.textContent,
-        '#chat .mes_text .custom-cd-c1 {\n' +
+        '#chat .mes_text .custom-cd-c1,\n' +
+            '#chat .mes_text .custom-cd-c1 q {\n' +
             '    color: #E69F00;\n' +
             '}',
     );

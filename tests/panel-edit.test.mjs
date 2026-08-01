@@ -334,15 +334,25 @@ test('repeated refreshes keep one listener per current control', async (t) => {
 
 test('persists an immutable-ID edit and refreshes the panel and CSS', async (t) => {
     const harness = await createEditHarness(t);
+    const assignments =
+        harness.context.chatMetadata[
+            CHAT_METADATA_KEY
+        ].assignments;
 
+    delete assignments.c2;
+    assignments.c99 = {
+        name: 'Boundary original',
+        color: '#999999',
+    };
+    harness.refreshPanelState();
     await selectAssignment(harness);
 
     assert.equal(harness.panel.dataset.assignmentMode, 'edit');
-    assert.equal(harness.idInput.value, 'c2');
+    assert.equal(harness.idInput.value, 'c99');
     assert.equal(harness.idInput.readOnly, true);
     assert.equal(
         harness.formLegend.textContent,
-        'Edit assignment c2',
+        'Edit assignment c99',
     );
     assert.equal(harness.submitButton.textContent, 'Save changes');
     assert.equal(harness.cancelButton.hidden, false);
@@ -370,7 +380,7 @@ test('persists an immutable-ID edit and refreshes the panel and CSS', async (t) 
                     name: 'Unrelated',
                     color: '#111111',
                 },
-                c2: {
+                c99: {
                     name: 'Edited name',
                     color: '#A1B2C3',
                 },
@@ -393,7 +403,7 @@ test('persists an immutable-ID edit and refreshes the panel and CSS', async (t) 
     assert.ok(generatedStyle);
     assert.match(
         generatedStyle.textContent,
-        /\.custom-cd-c2 \{\n    color: #A1B2C3;/,
+        /\.custom-cd-c99 q \{\n    color: #A1B2C3;/,
     );
 
     assert.equal(harness.panel.dataset.assignmentMode, 'add');
@@ -411,7 +421,7 @@ test('persists an immutable-ID edit and refreshes the panel and CSS', async (t) 
     assert.equal(harness.feedback.dataset.feedbackKind, 'valid');
     assert.equal(
         harness.feedback.textContent,
-        'Assignment c2 updated.',
+        'Assignment c99 updated.',
     );
 });
 
@@ -598,7 +608,8 @@ test('locks edit controls and clears stale mode after a pending chat switch', as
     );
     assert.equal(
         harness.getGeneratedStyle().textContent,
-        '#chat .mes_text .custom-cd-c2 {\n' +
+        '#chat .mes_text .custom-cd-c2,\n' +
+            '#chat .mes_text .custom-cd-c2 q {\n' +
             '    color: #BBBBBB;\n' +
             '}',
     );

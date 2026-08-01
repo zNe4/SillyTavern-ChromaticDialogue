@@ -5,15 +5,15 @@
 
 ## Project status
 
-- Current phase: **Phase 5 complete — Phase 6 next**
+- Current phase: **Phase 6 pre-push acceptance complete — distribution acceptance pending**
 - Target SillyTavern version: **1.18.0+**
 - Reference installation: **1.18.0-1-g8172dcd0e**
 - First release target: **v0.1.0**
-- Implementation status: **Phases 1 through 5 complete**
+- Implementation status: **Phases 1 through 5 complete; Phase 6 candidate reviewed and ready for its first normal push**
 - Repository: **https://github.com/zNe4/SillyTavern-ChromaticDialogue**
-- Latest implementation checkpoint: **Phase 5 complete — active-chat table/CSS synchronization, stale editor invalidation, and pending-operation completion isolation**
-- Verification baseline: **49 passing tests plus Firefox desktop and 390 × 844 responsive-mobile chat-switch gates with exact per-chat cleanup**
-- Next action: Commit and push the verified Phase 5 completion, then begin Phase 6 MVP hardening and mobile verification.
+- Latest implementation checkpoint: **Phase 6 candidate — boundary/input hardening, long-name mobile layout, accessibility, and theme-safe nested-quote colors**
+- Verification baseline: **53 passing tests; Firefox 153 desktop/NanoGPT; six themes; 390 × 844 and 360 × 780 responsive gates; physical Samsung Note 20 Ultra/Opera/Termux usability; exact cleanup**
+- Next action: Apply the Phase 6 evidence documentation, perform the pre-push review, normally commit and push the implementation candidate, then run disposable Extension Manager update and fresh GitHub installation acceptance.
 
 Update this section whenever a phase begins or finishes.
 
@@ -38,7 +38,8 @@ Chromatic Dialogue stores:
 c1 = Catherine = #56B4E9
 
 Chromatic Dialogue generates:
-#chat .mes_text .custom-cd-c1 { color: #56B4E9; }
+#chat .mes_text .custom-cd-c1,
+#chat .mes_text .custom-cd-c1 q { color: #56B4E9; }
 ```
 
 The project deliberately separates three responsibilities:
@@ -397,7 +398,11 @@ silently into every chat.
 7. Await `saveMetadata()`.
 8. Regenerate CSS.
 9. Rerender the table.
-10. Show a success or failure notification.
+10. Show accessible success or failure status inside the extension panel.
+
+Optional SillyTavern toast notifications for successful CRUD operations are a
+future usability enhancement; they must supplement rather than replace the
+accessible in-panel status.
 
 Never cache `chatMetadata` in a long-lived variable because SillyTavern replaces
 the reference when the active chat changes.
@@ -437,7 +442,7 @@ Find:
 Replace:
 
 ```html
-<span class="cd-c$1">“$2”</span>
+<span class="custom-cd-c$1">“$2”</span>
 ```
 
 ### Required configuration
@@ -487,7 +492,8 @@ The extension owns one style element:
 Candidate generated rule:
 
 ```css
-#chat .mes_text .custom-cd-c1 {
+#chat .mes_text .custom-cd-c1,
+#chat .mes_text .custom-cd-c1 q {
   color: #56B4E9;
 }
 ```
@@ -816,32 +822,83 @@ feat: synchronize assignments on chat change
 
 ### Phase 6 — MVP hardening and mobile verification
 
+Status: **Pre-push acceptance complete; post-push distribution acceptance pending**
+
 Tasks:
 
-- [ ] Test IDs `c1`, `c9`, `c10`, and `c99`.
-- [ ] Reject `c0`, `c01`, `c100`, uppercase IDs, and arbitrary classes.
-- [ ] Test empty, whitespace-only, Unicode, and long names.
-- [ ] Test lowercase and uppercase hex input.
-- [ ] Test deletion and re-adding the same ID.
-- [ ] Test message edits.
-- [ ] Test swipes and regeneration.
-- [ ] Test streaming.
-- [ ] Test page reload.
-- [ ] Test multiple themes.
-- [ ] Test Firefox/Chromium on desktop when available.
-- [ ] Test the Termux-hosted installation on a phone.
+- [x] Test IDs `c1`, `c9`, `c10`, and `c99`.
+- [x] Reject `c0`, `c01`, `c100`, and arbitrary classes. Normalize
+      uppercase input such as `C1` to canonical `c1`, and detect duplicates
+      after normalization.
+- [x] Test empty, whitespace-only, Unicode, and long names.
+- [x] Test lowercase and uppercase hex input.
+- [x] Test deletion and re-adding the same ID.
+- [x] Test message edits.
+- [x] Test swipes and regeneration.
+- [x] Test streaming.
+- [x] Test page reload.
+- [x] Test multiple themes.
+- [x] Test Firefox on desktop.
+- [x] Defer Chromium desktop with an explicit reason: Chromium is unavailable
+      in the current test environment.
+- [x] Test the Termux-hosted installation on a physical phone through a
+      human-only usability attestation.
 - [ ] Test GitHub installation.
 - [ ] Test Extension Manager update from an earlier manifest version.
-- [ ] Review console logging and remove debug noise.
-- [ ] Review accessibility labels and keyboard navigation.
+- [x] Review console logging and remove debug noise.
+- [x] Review accessibility labels and keyboard navigation.
+
+Pre-push evidence recorded on 2026-08-01:
+
+- Automated verification passed **53/53 tests** with **20/20** JavaScript/MJS
+  syntax checks. Focused quote-color regression passed **9/9** tests.
+- Boundary IDs, invalid IDs, duplicate `C1`, canonical lowercase storage,
+  lowercase/uppercase hexadecimal input, empty/whitespace names, Unicode and
+  long names, delete/re-add, numeric ordering, reload reconstruction, and safe
+  text rendering passed.
+- Firefox **153.0** on Linux/X11 passed the desktop gate. NanoGPT streaming with
+  a decentralized Llama 3.1 8B model transformed markers once a complete valid
+  tag was present. Final streaming, swipe, regeneration, and edited messages
+  used the expected marker classes and colors without changing assignment
+  metadata or duplicating the panel/style lifecycle.
+- Theme coverage passed in **Azure**, **Dark Lite**, **Celestial Macaron**,
+  **Cappuccino**, **Moonlit Echoes**, and **Violet Glass Light**. Theme quote
+  rules initially exposed a nested-`<q>` color override; the focused fix now
+  colors both `.custom-cd-cN` and its nested `q` without `!important`, message
+  traversal, or Regex changes. The corrected visible `c1` color was verified
+  as `rgb(86, 180, 233)` in Dark Lite and Violet Glass Light.
+- Keyboard traversal had logical order, visible focus, named controls,
+  working activation/cancellation, and no trap. No new uncaught or Chromatic
+  Dialogue-attributable console error appeared.
+- Firefox Responsive Design Mode passed at **390 × 844** and **360 × 780** CSS
+  pixels with readable long names, reachable fields/actions, coherent layout,
+  theme contrast, and no duplicate panel, rows, or generated style.
+- Physical Android human-usability confirmation passed on a **Samsung Note 20
+  Ultra**, portrait orientation, using **Opera 100.2.5122.89341** with its own
+  Termux-hosted SillyTavern installation. Settings expansion, long-name
+  readability, mobile-keyboard entry, color picker/hex input, edit/cancel,
+  delete/re-add, layout, and navigation back to chat all passed. The disposable
+  assignment was cleaned up. Missing viewport telemetry was not treated as a
+  failure.
+- The Termux runtime sync began from public Phase 5 commit
+  `64e468c0d7584355b00884fed2cea0e7b2d20dd9`, copied exactly the five reviewed
+  runtime files, preserved all non-target extension content and Git identity,
+  and reproduced **53/53** tests.
+- The disposable Firefox chat was restored exactly to its original `c1` and
+  `c50` metadata. All snapshot and message guards were closed.
+- Chromium desktop remains explicitly deferred because it is unavailable.
+- Remaining Phase 6 acceptance is intentionally post-push: update a disposable
+  public Phase 5 installation to the pushed candidate, then remove it and
+  perform a fresh GitHub installation from `main`.
 
 Exit criteria:
 
-- No uncaught errors.
-- No duplicate styles or panels.
-- No stale mappings after chat changes.
-- No horizontal overflow or unusable controls on mobile.
-- Install and update paths work from GitHub.
+- [x] No uncaught extension-attributable errors.
+- [x] No duplicate styles or panels.
+- [x] No stale mappings after chat changes.
+- [x] No horizontal overflow or unusable controls on responsive or physical
+      mobile gates.
+- [ ] Install and update paths work from the pushed GitHub candidate.
 
 Suggested commit:
 
@@ -1084,6 +1141,11 @@ The project is not complete merely because the UI appears to work once.
 | 2026-07-30 | Scope generated rules to `#chat .mes_text .custom-cd-cN` | Matches the verified SillyTavern message body and actual Regex-rendered class contract |
 | 2026-07-30 | Register one combined chat refresh listener during extension activation | Restored chat metadata may become available before `APP_INITIALIZED`; early `CHAT_CHANGED` registration applies and clears CSS reliably without polling |
 | 2026-07-31 | Track the rendered chat identity per panel and suppress stale operation completions | The existing single `CHAT_CHANGED` listener remains sufficient while form, feedback, rows, and CSS converge safely after rapid switches or pending saves |
+| 2026-08-01 | Normalize uppercase assignment input while keeping canonical storage lowercase | `C1` is a tolerant user/read form of `c1`; duplicate detection must run after normalization |
+| 2026-08-01 | Preserve long Unicode names without an arbitrary limit | Safe text rendering and responsive wrapping passed automated, Firefox RDM, and physical Android verification |
+| 2026-08-01 | Color both marker spans and nested `q` descendants | SillyTavern theme quote rules can override visible nested quote text even when the marker span itself has the correct computed color |
+| 2026-08-01 | Use physical Android as a human-only usability gate and defer unavailable Chromium desktop | Phone automation was not required for meaningful touch/layout acceptance, while unavailable browser coverage must not be reported as passed |
+| 2026-08-01 | Keep accepted in-panel CRUD feedback and track optional platform toasts as a future enhancement | Adding new notification integration after interaction acceptance is not required to close Phase 6 and should retain the accessible status channel |
 
 ---
 
@@ -1108,11 +1170,18 @@ Resolve before the indicated milestone:
 ### Before v0.1.0
 
 - [ ] Whether Max Depth `50` is the best mobile default.
-- [ ] Exact streaming behavior.
+- [x] Exact streaming behavior: a compact marker may remain raw/partial while
+      streaming and transforms once its complete valid closing tag is present.
 
 - [ ] Whether to support only `1.18.0+` or test older releases.
 - [ ] Whether a GitHub Release page is useful in addition to the Git tag.
 - [ ] Final screenshots and extension description.
+
+### Future usability enhancements
+
+- [ ] Consider optional SillyTavern toast notifications after successful add,
+      edit, and delete operations while retaining the accepted accessible
+      in-panel status message.
 
 ### Before AI proposals
 
@@ -1224,4 +1293,13 @@ Initial entry:
 - Decisions changed: Preserve the existing one-time CHAT_CHANGED listener and guarded save path; use panel-scoped rendered identity to prevent stale UI completions from crossing chat boundaries.
 - Additional verification: Chat A and Chat B metadata were restored exactly to their read-only snapshots; no polling, observer, animation loop, continuous DOM scan, message traversal, message rewrite, or direct metadata write was introduced.
 - Next: Commit and push the verified Phase 5 completion, then begin Phase 6 MVP hardening and mobile verification.
+```
+
+```text
+2026-08-01 — Phase 6 pre-push acceptance
+- Completed: Hardened boundary/input behavior, long-name mobile layout, accessibility markup, logging discipline, and generated colors for marker spans plus nested quote elements; synchronized the reviewed runtime to desktop and Termux installations.
+- Tested: 53/53 automated tests and 20/20 syntax checks; Firefox 153 desktop with NanoGPT streaming, swipe, regeneration, edits, reload, keyboard, six themes, and console review; 390 × 844 and 360 × 780 Firefox RDM; Samsung Note 20 Ultra portrait usability in Opera 100.2.5122.89341 against Termux; exact desktop-chat cleanup.
+- Problems found: SillyTavern theme quote rules overrode visible nested quote text; the focused selector fix passed 9/9 focused tests and live Dark Lite/Violet Glass Light checks. The physical-phone operator requested optional full SillyTavern success notifications; accepted in-panel feedback remains functional and the toast enhancement is recorded for later. Chromium desktop was unavailable and is explicitly deferred.
+- Decisions changed: Uppercase IDs normalize to lowercase canonical storage; long Unicode names remain unbounded; generated rules cover nested q elements; phone acceptance remains human-only; optional platform toasts must supplement accessible in-panel feedback.
+- Next: Apply this evidence documentation, perform the pre-push review, normally commit and push the Phase 6 candidate, then run disposable public-Phase-5 update and fresh-main installation acceptance before declaring Phase 6 complete.
 ```

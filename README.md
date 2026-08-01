@@ -8,11 +8,12 @@ It is designed to associate compact dialogue markers such as
 messages and outgoing prompts unchanged.
 
 > [!IMPORTANT]
-> Chromatic Dialogue is currently in early development. Phases 1 through 5
-> provide per-chat storage, dynamic dialogue styles, and complete manual
-> assignment management with chat-change synchronization. AI proposals,
-> inherited defaults, import/export, and release hardening are not implemented
-> yet.
+> Chromatic Dialogue is currently in early development. Phases 1 through 5 are
+> complete, and the Phase 6 candidate has passed its automated, Firefox,
+> responsive-layout, and physical-Android pre-push gates. GitHub update and
+> fresh-install acceptance remain pending until that candidate is published.
+> AI proposals, inherited defaults, import/export, and release hardening are
+> not implemented yet.
 
 ## Intended workflow
 
@@ -59,11 +60,18 @@ The current implementation:
 * Shows a no-chat state when no chat is active.
 * Shows an empty-assignment state when a chat is active.
 * Stores independent `c1` through `c99` assignments in each chat's metadata.
+* Accepts uppercase or surrounding whitespace in assignment-ID input and stores
+  the canonical lowercase ID, so `C1` becomes `c1`.
 * Adds, edits, and deletes assignments through the Extensions panel.
 * Keeps assignment IDs immutable while editing.
 * Requires confirmation before deletion.
 * Validates names, IDs, and six-digit hexadecimal colors before persistence.
+* Preserves Unicode names without an arbitrary length limit after trimming
+  leading and trailing whitespace.
+* Normalizes accepted hexadecimal colors to uppercase.
 * Regenerates scoped dialogue CSS immediately after successful changes.
+* Applies each selected color to both the Regex marker span and any nested
+  `<q>` element inserted by SillyTavern's quote rendering.
 * Restores saved mappings after reload.
 * Synchronizes the assignment table and generated CSS with every active-chat
   change, including rapid repeated switching.
@@ -80,12 +88,35 @@ The current implementation:
 1. Open a chat.
 2. Open **Extensions → Chromatic Dialogue**.
 3. Enter an unused ID from `c1` through `c99`, a character name, and a color.
+   Uppercase ID input is accepted and normalized to lowercase.
 4. Select **Add assignment**.
 5. Use **Edit** to change the name or color without changing the marker ID.
 6. Use **Delete** and confirm the prompt to remove an assignment.
 
-Successful changes are saved to the active chat and update generated dialogue
-styles immediately.
+Successful changes are saved to the active chat, update generated dialogue
+styles immediately, and produce an accessible status message inside the
+extension panel. Optional SillyTavern toast notifications for successful add,
+edit, and delete operations are tracked as a future usability enhancement.
+
+## Phase 6 compatibility verification
+
+The current pre-push candidate has been verified with:
+
+* **53/53 automated tests** and syntax checks for all 20 JavaScript/MJS files.
+* **Firefox 153.0 on Linux/X11**, including NanoGPT streaming with a
+  decentralized Llama 3.1 8B model, message edits, swipes, regeneration,
+  reload, keyboard-only operation, and console review.
+* Themes **Azure**, **Dark Lite**, **Celestial Macaron**, **Cappuccino**,
+  **Moonlit Echoes**, and **Violet Glass Light**.
+* Firefox Responsive Design Mode at **390 × 844** and **360 × 780** CSS pixels.
+* A physical **Samsung Note 20 Ultra** in portrait orientation using
+  **Opera 100.2.5122.89341** against a separate Termux-hosted SillyTavern
+  installation.
+
+Chromium desktop verification is explicitly deferred because Chromium is not
+available in the current test environment. Phase 6 is not complete until the
+published candidate also passes disposable Extension Manager update and fresh
+GitHub installation tests.
 
 ## Development
 
@@ -98,11 +129,13 @@ Run the automated tests with:
 npm test
 ```
 
-The 49-test suite currently verifies domain normalization, guarded per-chat
+The 53-test suite currently verifies domain normalization, guarded per-chat
 persistence, generated CSS, lifecycle behavior, assignment rendering,
-validation, add/edit/delete operations, pending-save locking, rapid chat-switch
+validation, boundary and invalid IDs, uppercase-ID and hexadecimal-color
+normalization, Unicode and long names, accessibility markup, nested quote
+coloring, add/edit/delete operations, pending-save locking, rapid chat-switch
 isolation, stale form and completion invalidation, blank/no-chat states,
-persistence rollback, and ID reuse after deletion.
+persistence rollback, reload reconstruction, and ID reuse after deletion.
 
 ## Project structure
 

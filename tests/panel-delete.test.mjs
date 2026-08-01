@@ -658,7 +658,8 @@ test('a pending chat switch never refreshes deletion into the new chat', async (
     );
     assert.equal(
         harness.getGeneratedStyle().textContent,
-        '#chat .mes_text .custom-cd-c2 {\n' +
+        '#chat .mes_text .custom-cd-c2,\n' +
+            '#chat .mes_text .custom-cd-c2 q {\n' +
             '    color: #BBBBBB;\n' +
             '}',
     );
@@ -725,14 +726,23 @@ test('failed persistence restores the assignment and permits retry', async (t) =
 
 test('a deleted assignment ID can be added again', async (t) => {
     const harness = await createDeleteHarness(t);
+    const assignments =
+        harness.context.chatMetadata[
+            CHAT_METADATA_KEY
+        ].assignments;
 
+    assignments.c99 = {
+        name: 'Boundary assignment',
+        color: '#999999',
+    };
+    harness.refreshPanelState();
     await getRowButton(
         harness,
-        'c2',
+        'c99',
         'delete',
     ).dispatch('click');
 
-    harness.idInput.value = 'c2';
+    harness.idInput.value = 'c99';
     harness.nameInput.value = 'Replacement';
     harness.hexColorInput.value = '#abcdef';
 
@@ -742,19 +752,19 @@ test('a deleted assignment ID can be added again', async (t) => {
     assert.deepEqual(
         harness.context.chatMetadata[
             CHAT_METADATA_KEY
-        ].assignments.c2,
+        ].assignments.c99,
         {
             name: 'Replacement',
             color: '#ABCDEF',
         },
     );
-    assert.ok(getRow(harness, 'c2'));
+    assert.ok(getRow(harness, 'c99'));
     assert.match(
         harness.getGeneratedStyle().textContent,
-        /\.custom-cd-c2 \{\n    color: #ABCDEF;/,
+        /\.custom-cd-c99 q \{\n    color: #ABCDEF;/,
     );
     assert.equal(
         harness.feedback.textContent,
-        'Assignment c2 added.',
+        'Assignment c99 added.',
     );
 });

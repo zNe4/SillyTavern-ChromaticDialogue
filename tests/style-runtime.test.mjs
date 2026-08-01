@@ -75,7 +75,8 @@ test(
         assert.equal(style.id, GENERATED_STYLE_ID);
         assert.equal(
             style.textContent,
-            '#chat .mes_text .custom-cd-c1 {\n' +
+            '#chat .mes_text .custom-cd-c1,\n' +
+                '#chat .mes_text .custom-cd-c1 q {\n' +
                 '    color: #56B4E9;\n' +
                 '}',
         );

@@ -237,7 +237,8 @@ test('registers once and synchronizes repeated active-chat changes', async (t) =
     assert.equal(generatedStyle.tagName, 'STYLE');
     assert.equal(
         generatedStyle.textContent,
-        '#chat .mes_text .custom-cd-c1 {\n' +
+        '#chat .mes_text .custom-cd-c1,\n' +
+            '#chat .mes_text .custom-cd-c1 q {\n' +
             '    color: #56B4E9;\n' +
             '}',
     );
@@ -258,7 +259,8 @@ test('registers once and synchronizes repeated active-chat changes', async (t) =
     assert.equal(styleAppendCount, 1);
     assert.equal(
         generatedStyle.textContent,
-        '#chat .mes_text .custom-cd-c1 {\n' +
+        '#chat .mes_text .custom-cd-c1,\n' +
+            '#chat .mes_text .custom-cd-c1 q {\n' +
             '    color: #56B4E9;\n' +
             '}',
     );
@@ -343,7 +345,8 @@ test('registers once and synchronizes repeated active-chat changes', async (t) =
         );
         assert.equal(
             generatedStyle.textContent,
-            '#chat .mes_text .custom-cd-c1 {\n' +
+            '#chat .mes_text .custom-cd-c1,\n' +
+                '#chat .mes_text .custom-cd-c1 q {\n' +
                 `    color: ${color};\n` +
                 '}',
         );

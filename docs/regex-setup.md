@@ -18,7 +18,7 @@ use these values.
 ### Replace With
 
 ```html
-<span class="cd-c$1">“$2”</span>
+<span class="custom-cd-c$1">“$2”</span>
 ```
 
 ### Required settings
@@ -48,7 +48,7 @@ Use Regex Test Mode with:
 The displayed result should be:
 
 ```html
-<span class="cd-c1">“Good morning.”</span>
+<span class="custom-cd-c1">“Good morning.”</span>
 ```
 
 Then verify an actual AI chat message before relying on the setup.
@@ -66,6 +66,10 @@ Then verify an actual AI chat message before relying on the setup.
 Messages older than **Max Depth** may show raw markers. Choose **Unlimited** if
 you want the entire visible transcript transformed. During streaming, a marker
 may remain temporarily visible until its closing `[/c]` arrives.
+
+SillyTavern may render recognized quotation marks as a nested `<q>` element.
+Chromatic Dialogue's generated rules cover both the marker span and nested
+`<q>` elements so the selected marker color remains visible across themes.
 
 If the Regex script is missing or disabled, Chromatic Dialogue must continue to
 load safely; the compact markers will simply remain visible.

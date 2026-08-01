@@ -80,10 +80,17 @@ export function buildDialogueCss(assignments) {
 
     return entries
         .map(
-            ([id, assignment]) =>
-                `${CHAT_CONTENT_SELECTOR} .${DIALOGUE_CLASS_PREFIX}${id} {\n` +
-                `    color: ${assignment.color};\n` +
-                '}',
+            ([id, assignment]) => {
+                const selector =
+                    `${CHAT_CONTENT_SELECTOR} .${DIALOGUE_CLASS_PREFIX}${id}`;
+
+                return (
+                    `${selector},\n` +
+                    `${selector} q {\n` +
+                    `    color: ${assignment.color};\n` +
+                    '}'
+                );
+            },
         )
         .join('\n\n');
 }

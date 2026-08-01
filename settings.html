@@ -4,15 +4,24 @@
     data-chat-state="none"
 >
     <div class="inline-drawer">
-        <div class="inline-drawer-toggle inline-drawer-header">
+        <button
+            id="chromatic-dialogue-drawer-toggle"
+            class="inline-drawer-toggle inline-drawer-header chromatic-dialogue-drawer-toggle"
+            type="button"
+            aria-controls="chromatic-dialogue-drawer-content"
+            aria-expanded="false"
+        >
             <b>Chromatic Dialogue</b>
-            <div
+            <span
                 class="inline-drawer-icon fa-solid fa-circle-chevron-down down"
                 aria-hidden="true"
-            ></div>
-        </div>
+            ></span>
+        </button>
 
-        <div class="inline-drawer-content">
+        <div
+            id="chromatic-dialogue-drawer-content"
+            class="inline-drawer-content"
+        >
             <p class="chromatic-dialogue-description">
                 Manage dialogue color assignments for the active chat.
             </p>
@@ -70,10 +79,17 @@
                                 class="text_pole"
                                 type="text"
                                 placeholder="c1"
-                                maxlength="3"
+                                aria-describedby="chromatic-dialogue-assignment-id-help"
                                 autocomplete="off"
                                 spellcheck="false"
                             >
+                            <span
+                                id="chromatic-dialogue-assignment-id-help"
+                                class="chromatic-dialogue-field-hint"
+                            >
+                                Use c1 through c99. Uppercase input is normalized
+                                to lowercase.
+                            </span>
                         </label>
 
                         <label class="chromatic-dialogue-field">

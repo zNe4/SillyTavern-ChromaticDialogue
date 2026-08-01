@@ -174,6 +174,25 @@ test('validates assignment input without writing metadata', async (t) => {
     assert.equal(feedback.dataset.feedbackKind, 'error');
     assert.equal(feedback.hidden, false);
 
+    nameInput.value = 'Valid name';
+    hexColorInput.value = '#123ABC';
+
+    for (const invalidId of [
+        'c0',
+        'c01',
+        'c100',
+        'custom-cd-c1',
+    ]) {
+        idInput.value = invalidId;
+        await addButton.dispatch('click');
+
+        assert.equal(
+            feedback.textContent,
+            'Assignment ID must be c1 through c99.',
+        );
+        assert.deepEqual(chatMetadata, {});
+    }
+
     idInput.value = 'c1';
     nameInput.value = '   ';
     await addButton.dispatch('click');
@@ -204,6 +223,7 @@ test('validates assignment input without writing metadata', async (t) => {
             },
         },
     };
+    idInput.value = ' C1 ';
 
     await addButton.dispatch('click');
 

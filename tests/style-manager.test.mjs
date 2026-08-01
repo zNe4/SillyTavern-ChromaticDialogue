@@ -44,7 +44,7 @@ function createStyleDocument() {
     };
 }
 
-test('builds deterministic rules for the rendered Regex classes', () => {
+test('builds deterministic rules for marker spans and nested quotes', () => {
     assert.equal(
         buildDialogueCss({
             c10: {
@@ -57,11 +57,13 @@ test('builds deterministic rules for the rendered Regex classes', () => {
             },
         }),
         [
-            '#chat .mes_text .custom-cd-c1 {',
+            '#chat .mes_text .custom-cd-c1,',
+            '#chat .mes_text .custom-cd-c1 q {',
             '    color: #56B4E9;',
             '}',
             '',
-            '#chat .mes_text .custom-cd-c10 {',
+            '#chat .mes_text .custom-cd-c10,',
+            '#chat .mes_text .custom-cd-c10 q {',
             '    color: #123456;',
             '}',
         ].join('\n'),
@@ -154,7 +156,8 @@ test('replaces generated CSS through one textContent assignment', () => {
     assert.equal(writeCount, 1);
     assert.equal(
         css,
-        '#chat .mes_text .custom-cd-c1 {\n' +
+        '#chat .mes_text .custom-cd-c1,\n' +
+            '#chat .mes_text .custom-cd-c1 q {\n' +
             '    color: #56B4E9;\n' +
             '}',
     );

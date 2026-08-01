@@ -42,6 +42,13 @@ test('stored assignment IDs are normalized safely', () => {
 test('names are trimmed and empty names are rejected', () => {
     assert.equal(normalizeName('  Alice  '), 'Alice');
     assert.equal(normalizeName('Alice Smith'), 'Alice Smith');
+    assert.equal(normalizeName('  Élodie 雪 👩🏽‍🚀  '), 'Élodie 雪 👩🏽‍🚀');
+    const longUnicodeName = '非常に長い名前'.repeat(500);
+
+    assert.equal(
+        normalizeName(`  ${longUnicodeName}  `),
+        longUnicodeName,
+    );
     assert.equal(normalizeName('   '), null);
     assert.equal(normalizeName(''), null);
     assert.equal(normalizeName(null), null);
@@ -135,6 +142,33 @@ test('partially malformed assignments are skipped and valid values normalize', (
 
     assert.equal(input.assignments[' C1 '].name, '  Alice  ');
     assert.equal(input.assignments[' C1 '].color, ' #a1b2c3 ');
+});
+
+test('tolerant stored reads canonicalize uppercase keys without collisions', () => {
+    assert.deepEqual(
+        normalizeState({
+            schemaVersion: 1,
+            assignments: {
+                ' C1 ': {
+                    name: 'First canonical value',
+                    color: '#abcdef',
+                },
+                c1: {
+                    name: 'Duplicate after normalization',
+                    color: '#123456',
+                },
+            },
+        }),
+        {
+            schemaVersion: 1,
+            assignments: {
+                c1: {
+                    name: 'First canonical value',
+                    color: '#ABCDEF',
+                },
+            },
+        },
+    );
 });
 
 test('unsupported explicit schema versions are not interpreted', () => {

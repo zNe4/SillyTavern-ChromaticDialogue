@@ -14,6 +14,7 @@ import {
     EXTENSION_FOLDER,
     EXTENSIONS_SETTINGS_CONTAINER_ID,
     NO_CHAT_STATE_ID,
+    PANEL_DRAWER_TOGGLE_ID,
     PANEL_ID,
 } from './constants.js';
 import {
@@ -29,8 +30,43 @@ import { refreshDialogueStyles } from './style-runtime.js';
 
 const synchronizedColorPanels = new WeakSet();
 const registeredAssignmentForms = new WeakSet();
+const registeredAccessibleDrawers = new WeakSet();
 const assignmentEditorStates = new WeakMap();
 const DEFAULT_ASSIGNMENT_COLOR = '#56B4E9';
+
+/**
+ * Keep the native drawer button's expansion state synchronized once per panel.
+ *
+ * SillyTavern owns the existing inline-drawer click behavior. Chromatic
+ * Dialogue adds only the accessible state that corresponds to each activation.
+ *
+ * @param {HTMLElement} panel
+ */
+function registerDrawerAccessibility(panel) {
+    if (registeredAccessibleDrawers.has(panel)) {
+        return;
+    }
+
+    const drawerToggle = panel.querySelector(
+        `#${PANEL_DRAWER_TOGGLE_ID}`,
+    );
+
+    if (!drawerToggle) {
+        return;
+    }
+
+    drawerToggle.addEventListener('click', () => {
+        const isExpanded =
+            drawerToggle.getAttribute('aria-expanded') === 'true';
+
+        drawerToggle.setAttribute(
+            'aria-expanded',
+            String(!isExpanded),
+        );
+    });
+
+    registeredAccessibleDrawers.add(panel);
+}
 
 /**
  * Obtain panel-scoped transient editor state.
@@ -1022,6 +1058,7 @@ export function refreshPanelState() {
 
     registerColorSynchronization(panel);
     registerAssignmentForm(panel);
+    registerDrawerAccessibility(panel);
 
     const { status, chatId, state } = readActiveChatState();
     const editorState = getAssignmentEditorState(panel);
