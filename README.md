@@ -8,12 +8,12 @@ It is designed to associate compact dialogue markers such as
 messages and outgoing prompts unchanged.
 
 > [!IMPORTANT]
-> Chromatic Dialogue is currently in early development. Phases 1 through 5 are
-> complete, and the Phase 6 candidate has passed its automated, Firefox,
-> responsive-layout, and physical-Android pre-push gates. GitHub update and
-> fresh-install acceptance remain pending until that candidate is published.
-> AI proposals, inherited defaults, import/export, and release hardening are
-> not implemented yet.
+> Chromatic Dialogue is currently in early development. Phases 1 through 6 are
+> complete. The published Phase 6 implementation passed automated, Firefox,
+> responsive-layout, physical-Android, Extension Manager update, and fresh
+> GitHub installation acceptance. Phase 7 release documentation and versioning
+> are next. AI proposals, inherited defaults, and import/export are not
+> implemented yet.
 
 ## Intended workflow
 
@@ -98,9 +98,10 @@ styles immediately, and produce an accessible status message inside the
 extension panel. Optional SillyTavern toast notifications for successful add,
 edit, and delete operations are tracked as a future usability enhancement.
 
-## Phase 6 compatibility verification
+## Phase 6 acceptance
 
-The current pre-push candidate has been verified with:
+The published Phase 6 implementation at commit
+`1d6864c0f35f9809cbf124f3deea0dbcc26a4d73` has been verified with:
 
 * **53/53 automated tests** and syntax checks for all 20 JavaScript/MJS files.
 * **Firefox 153.0 on Linux/X11**, including NanoGPT streaming with a
@@ -112,11 +113,19 @@ The current pre-push candidate has been verified with:
 * A physical **Samsung Note 20 Ultra** in portrait orientation using
   **Opera 100.2.5122.89341** against a separate Termux-hosted SillyTavern
   installation.
+* A disposable SillyTavern **1.18.0** global installation updated through the
+  real Extension Manager from public Phase 5 commit
+  `64e468c0d7584355b00884fed2cea0e7b2d20dd9`. Existing chat metadata, panel
+  loading, basic CRUD, reload persistence, one generated style element,
+  console behavior, and cleanup all passed.
+* Removal of that updated clone followed by a fresh global installation from
+  the public GitHub URL. The resulting shallow `main` clone matched all 31
+  reviewed project files and reproduced **53/53 tests** and all 20 syntax
+  checks.
 
 Chromium desktop verification is explicitly deferred because Chromium is not
-available in the current test environment. Phase 6 is not complete until the
-published candidate also passes disposable Extension Manager update and fresh
-GitHub installation tests.
+available in the current test environment. This documented deferral is the only
+unrun browser matrix item; all non-deferred Phase 6 acceptance gates passed.
 
 ## Development
 

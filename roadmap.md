@@ -5,15 +5,15 @@
 
 ## Project status
 
-- Current phase: **Phase 6 pre-push acceptance complete — distribution acceptance pending**
+- Current phase: **Phase 6 complete — Phase 7 documentation and v0.1.0 preparation next**
 - Target SillyTavern version: **1.18.0+**
 - Reference installation: **1.18.0-1-g8172dcd0e**
 - First release target: **v0.1.0**
-- Implementation status: **Phases 1 through 5 complete; Phase 6 candidate reviewed and ready for its first normal push**
+- Implementation status: **Phases 1 through 6 complete; the published implementation passed update and fresh-install acceptance**
 - Repository: **https://github.com/zNe4/SillyTavern-ChromaticDialogue**
-- Latest implementation checkpoint: **Phase 6 candidate — boundary/input hardening, long-name mobile layout, accessibility, and theme-safe nested-quote colors**
-- Verification baseline: **53 passing tests; Firefox 153 desktop/NanoGPT; six themes; 390 × 844 and 360 × 780 responsive gates; physical Samsung Note 20 Ultra/Opera/Termux usability; exact cleanup**
-- Next action: Apply the Phase 6 evidence documentation, perform the pre-push review, normally commit and push the implementation candidate, then run disposable Extension Manager update and fresh GitHub installation acceptance.
+- Latest implementation checkpoint: **`1d6864c0f35f9809cbf124f3deea0dbcc26a4d73` — Phase 6 hardening published and distribution-accepted**
+- Verification baseline: **53 passing tests; Firefox 153 desktop/NanoGPT; six themes; 390 × 844 and 360 × 780 responsive gates; physical Samsung Note 20 Ultra/Opera/Termux usability; real Phase 5 update and fresh GitHub installation; exact cleanup**
+- Next action: Commit and push the Phase 6 completion record, prove local/remote equality, then begin Phase 7 release documentation and v0.1.0 preparation.
 
 Update this section whenever a phase begins or finishes.
 
@@ -822,7 +822,7 @@ feat: synchronize assignments on chat change
 
 ### Phase 6 — MVP hardening and mobile verification
 
-Status: **Pre-push acceptance complete; post-push distribution acceptance pending**
+Status: **Complete**
 
 Tasks:
 
@@ -843,8 +843,8 @@ Tasks:
       in the current test environment.
 - [x] Test the Termux-hosted installation on a physical phone through a
       human-only usability attestation.
-- [ ] Test GitHub installation.
-- [ ] Test Extension Manager update from an earlier manifest version.
+- [x] Test GitHub installation.
+- [x] Test Extension Manager update from the public Phase 5 checkpoint.
 - [x] Review console logging and remove debug noise.
 - [x] Review accessibility labels and keyboard navigation.
 
@@ -887,9 +887,26 @@ Pre-push evidence recorded on 2026-08-01:
 - The disposable Firefox chat was restored exactly to its original `c1` and
   `c50` metadata. All snapshot and message guards were closed.
 - Chromium desktop remains explicitly deferred because it is unavailable.
-- Remaining Phase 6 acceptance is intentionally post-push: update a disposable
-  public Phase 5 installation to the pushed candidate, then remove it and
-  perform a fresh GitHub installation from `main`.
+
+Post-push distribution evidence recorded on 2026-08-01:
+
+- The reviewed implementation was normally committed and pushed as
+  `1d6864c0f35f9809cbf124f3deea0dbcc26a4d73` with subject
+  `fix: harden MVP behavior across desktop and mobile`. Local `main` and
+  fetched `origin/main` matched with a clean worktree.
+- A separate global installation in disposable SillyTavern **1.18.0** began at
+  public Phase 5 commit `64e468c0d7584355b00884fed2cea0e7b2d20dd9`.
+  SillyTavern's Extension Manager performed a real `git pull` fast-forward to
+  the Phase 6 commit. The Phase 5 `c1` mapping survived exactly; panel loading,
+  basic CRUD, reload persistence, one generated style element, zero attributable
+  console errors, and cleanup all passed.
+- The updated extension was removed through the Extension Manager and installed
+  again globally from the public GitHub URL. The new depth-1 `main` clone had a
+  one-entry clone reflog at the exact Phase 6 commit, proving that the old clone
+  was removed rather than reused.
+- Both machine captures matched all **31** reviewed project files, preserved all
+  non-target extension siblings, passed **20/20** syntax checks and **53/53**
+  tests, and ended with all disposable assignments removed.
 
 Exit criteria:
 
@@ -898,7 +915,7 @@ Exit criteria:
 - [x] No stale mappings after chat changes.
 - [x] No horizontal overflow or unusable controls on responsive or physical
       mobile gates.
-- [ ] Install and update paths work from the pushed GitHub candidate.
+- [x] Install and update paths work from the pushed GitHub candidate.
 
 Suggested commit:
 
@@ -906,7 +923,15 @@ Suggested commit:
 fix: harden MVP behavior across desktop and mobile
 ```
 
+Completion documentation commit:
+
+```text
+docs: record Phase 6 installation acceptance
+```
+
 ### Phase 7 — Documentation and v0.1.0
+
+Status: **Next — ready to begin after the Phase 6 completion checkpoint**
 
 Tasks:
 
@@ -1098,6 +1123,7 @@ feat: generate scoped dialogue color styles
 feat: add assignment management panel
 feat: synchronize assignments on chat change
 fix: harden MVP behavior across desktop and mobile
+docs: record Phase 6 installation acceptance
 docs: prepare v0.1.0 release
 ```
 
@@ -1146,6 +1172,7 @@ The project is not complete merely because the UI appears to work once.
 | 2026-08-01 | Color both marker spans and nested `q` descendants | SillyTavern theme quote rules can override visible nested quote text even when the marker span itself has the correct computed color |
 | 2026-08-01 | Use physical Android as a human-only usability gate and defer unavailable Chromium desktop | Phone automation was not required for meaningful touch/layout acceptance, while unavailable browser coverage must not be reported as passed |
 | 2026-08-01 | Keep accepted in-panel CRUD feedback and track optional platform toasts as a future enhancement | Adding new notification integration after interaction acceptance is not required to close Phase 6 and should retain the accessible status channel |
+| 2026-08-01 | Require both a real Extension Manager fast-forward and a removed/recreated shallow GitHub clone for distribution acceptance | Git hashes, reflogs, exact file manifests, retained metadata, browser behavior, and cleanup distinguish real update/install paths from a manual checkout or file copy |
 
 ---
 
@@ -1302,4 +1329,14 @@ Initial entry:
 - Problems found: SillyTavern theme quote rules overrode visible nested quote text; the focused selector fix passed 9/9 focused tests and live Dark Lite/Violet Glass Light checks. The physical-phone operator requested optional full SillyTavern success notifications; accepted in-panel feedback remains functional and the toast enhancement is recorded for later. Chromium desktop was unavailable and is explicitly deferred.
 - Decisions changed: Uppercase IDs normalize to lowercase canonical storage; long Unicode names remain unbounded; generated rules cover nested q elements; phone acceptance remains human-only; optional platform toasts must supplement accessible in-panel feedback.
 - Next: Apply this evidence documentation, perform the pre-push review, normally commit and push the Phase 6 candidate, then run disposable public-Phase-5 update and fresh-main installation acceptance before declaring Phase 6 complete.
+```
+
+```text
+2026-08-01 — Phase 6 completion
+- Completed: Normally published the reviewed hardening implementation at 1d6864c0f35f9809cbf124f3deea0dbcc26a4d73; updated a disposable global installation from public Phase 5 through SillyTavern's real Extension Manager; removed it; and installed a new global depth-1 clone from the public GitHub URL.
+- Tested: Existing c1 metadata compatibility, panel and manifest loading, basic CRUD, reload persistence, exactly one generated style element, zero attributable console errors, cleanup, 31/31 project-file identity, 20/20 syntax checks, and 53/53 tests for both the updated and fresh installations.
+- Problems found: The first update capture used PASS for three measured observation fields that required exact values 1, 0, and YES. Correcting only those evidence values made the retry pass; no product, update, or test failure occurred. Chromium desktop remains explicitly deferred because it is unavailable.
+- Decisions changed: Phase 6 distribution acceptance requires both the real Phase 5-to-Phase 6 git-pull transition and a newly cloned shallow main installation; manifest version remains 0.0.1 until Phase 7.
+- Checkpoint: 1d6864c fix: harden MVP behavior across desktop and mobile.
+- Next: Commit and push this Phase 6 completion record, verify clean local/remote equality, then begin Phase 7 documentation and v0.1.0 release preparation.
 ```
