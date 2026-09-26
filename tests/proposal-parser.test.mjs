@@ -133,7 +133,7 @@ test('9. leading whitespace on comment lines is accepted', () => {
     assert.equal(result.proposals[0].id, 'c2');
 });
 
-test('10. proposal comment followed by visible text is rejected as misplaced', () => {
+test('10. proposal comment followed by visible text suffix is accepted', () => {
     const input = [
         '[c2]Hello.[/c]',
         '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
@@ -141,13 +141,19 @@ test('10. proposal comment followed by visible text is rejected as misplaced', (
     ].join('\n');
 
     assert.deepEqual(parseRegistrationTrailer(input), {
-        ok: false,
-        proposals: [],
-        errors: ['misplaced-control-record'],
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+        ],
+        errors: [],
     });
 });
 
-test('11. proposal comment followed by an unrelated HTML comment is rejected as misplaced', () => {
+test('11. proposal comment followed by an unrelated HTML comment suffix is accepted', () => {
     const input = [
         '[c2]Hello.[/c]',
         '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
@@ -155,13 +161,19 @@ test('11. proposal comment followed by an unrelated HTML comment is rejected as 
     ].join('\n');
 
     assert.deepEqual(parseRegistrationTrailer(input), {
-        ok: false,
-        proposals: [],
-        errors: ['misplaced-control-record'],
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+        ],
+        errors: [],
     });
 });
 
-test('12. a non-trailing CD_NEW comment is rejected without marker-not-used', () => {
+test('12. proposal comment where matching marker appears only afterwards is accepted', () => {
     const input = [
         '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
         '',
@@ -169,9 +181,15 @@ test('12. a non-trailing CD_NEW comment is rejected without marker-not-used', ()
     ].join('\n');
 
     assert.deepEqual(parseRegistrationTrailer(input), {
-        ok: false,
-        proposals: [],
-        errors: ['misplaced-control-record'],
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+        ],
+        errors: [],
     });
 });
 
@@ -302,7 +320,7 @@ test('21. invalid color is rejected', () => {
     }
 });
 
-test('22. proposal ID without matching [cN] in visible body is rejected', () => {
+test('22. proposal ID without matching [cN] in entire source message is rejected', () => {
     const input = [
         'Mara enters but speaks no bracketed lines.',
         '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
@@ -444,16 +462,37 @@ test('malformed empty control comment is rejected safely', () => {
     });
 });
 
-test('31. misplaced trailer where marker exists only after the control record returns only misplaced-control-record', () => {
+test('31. arbitrary mixed auxiliary suffix after registration is accepted', () => {
     const input = [
+        '[c2]Hello.[/c]',
+        '',
         '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
-        '[c2]Story after trailer.[/c]',
+        '',
+        '<div class="whatever">',
+        '    <div>',
+        '        arbitrary auxiliary content',
+        '    </div>',
+        '</div>',
+        '',
+        '### Notes',
+        '',
+        '| State | Value |',
+        '|---|---|',
+        '| Momentum | 4 |',
+        '',
+        '    indented material',
     ].join('\n');
 
     assert.deepEqual(parseRegistrationTrailer(input), {
-        ok: false,
-        proposals: [],
-        errors: ['misplaced-control-record'],
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+        ],
+        errors: [],
     });
 });
 
@@ -549,5 +588,94 @@ test('37. malformed multiline CD_NEW followed by later valid one-line CD_NEW ret
         ok: false,
         proposals: [],
         errors: ['malformed-control-record'],
+    });
+});
+
+test('38. multiple registrations separated only by blank lines remain one contiguous valid block', () => {
+    const input = [
+        '[c2]Mara here.[/c]',
+        '[c3]Jon here.[/c]',
+        '',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        '',
+        '   ',
+        '<!-- CD_NEW {"id":"c3","name":"Jon","color":"#56B4E9"} -->',
+        '',
+        'Auxiliary suffix text.',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+            {
+                id: 'c3',
+                name: 'Jon',
+                color: '#56B4E9',
+            },
+        ],
+        errors: [],
+    });
+});
+
+test('39. fragmented registrations separated by non-whitespace content are rejected', () => {
+    const input = [
+        '[c2]Mara.[/c]',
+        '[c3]Jon.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        'some non-whitespace material',
+        '<!-- CD_NEW {"id":"c3","name":"Jon","color":"#56B4E9"} -->',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: false,
+        proposals: [],
+        errors: ['misplaced-control-record'],
+    });
+});
+
+test('40. fragmented registrations separated by an unrelated HTML comment are rejected', () => {
+    const input = [
+        '[c2]Mara.[/c]',
+        '[c3]Jon.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        '<!-- unrelated HTML comment between records -->',
+        '<!-- CD_NEW {"id":"c3","name":"Jon","color":"#56B4E9"} -->',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: false,
+        proposals: [],
+        errors: ['misplaced-control-record'],
+    });
+});
+
+test('41. text preceding control record on the same physical line is rejected as misplaced', () => {
+    const input = [
+        '[c2]Hello.[/c]',
+        'text <!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: false,
+        proposals: [],
+        errors: ['misplaced-control-record'],
+    });
+});
+
+test('42. text trailing control record on the same physical line is rejected as misplaced', () => {
+    const input = [
+        '[c2]Hello.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} --> text',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: false,
+        proposals: [],
+        errors: ['misplaced-control-record'],
     });
 });

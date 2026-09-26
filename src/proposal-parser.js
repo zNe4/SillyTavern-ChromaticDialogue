@@ -64,7 +64,7 @@ function hasMultilineCdNewComment(message) {
 }
 
 /**
- * Safely parse trailing registration control records from a message.
+ * Safely parse registration control records from a message.
  *
  * @param {unknown} message
  * @returns {{
@@ -118,7 +118,7 @@ export function parseRegistrationTrailer(message) {
 
     const phase1Errors = new Set();
     const candidateProposals = [];
-    const visibleBody = lines.slice(0, firstControlLineIndex).join('\n');
+    let inBlock = true;
 
     for (let i = firstControlLineIndex; i < lines.length; i += 1) {
         const line = lines[i];
@@ -128,6 +128,11 @@ export function parseRegistrationTrailer(message) {
         }
 
         if (!CONTROL_COMMENT_PATTERN.test(line)) {
+            inBlock = false;
+            continue;
+        }
+
+        if (!inBlock) {
             phase1Errors.add('misplaced-control-record');
             continue;
         }
@@ -247,7 +252,7 @@ export function parseRegistrationTrailer(message) {
         }
         seenNames.add(proposal.name);
 
-        if (!visibleBody.includes(`[${proposal.id}]`)) {
+        if (!message.includes(`[${proposal.id}]`)) {
             phase2Errors.add('marker-not-used');
         }
     }
