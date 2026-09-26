@@ -4,6 +4,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { DIALOGUE_TONES } from '../src/dialogue-syntax.js';
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -59,6 +60,7 @@ test('release contract: required release documentation exists', () => {
         'roadmap.md',
         'docs/ai-prompt.md',
         'docs/regex-setup.md',
+        'docs/regex-dialogue-display.json',
         'docs/regex-control-records.json',
         'docs/release-checklist.md',
         'docs/development-history.md',
@@ -67,7 +69,7 @@ test('release contract: required release documentation exists', () => {
     }
 });
 
-test('release contract: README documents all operation modes and AI workflow', () => {
+test('release contract: README documents all operation modes, AI workflow, and optional dialogue tones', () => {
     const readme = read('README.md');
     for (const required of [
         '### Off',
@@ -80,6 +82,11 @@ test('release contract: README documents all operation modes and AI workflow', (
         'do not reserve IDs',
     ]) {
         assert.ok(readme.toLowerCase().includes(required.toLowerCase()), required);
+    }
+    assert.match(readme, /\[cN\][\s\S]*?\[\/c\]/);
+    assert.match(readme, /optional (?:dialogue )?tones?/i);
+    for (const tone of DIALOGUE_TONES) {
+        assert.ok(readme.toLowerCase().includes(tone.toLowerCase()), tone);
     }
 });
 
@@ -132,10 +139,29 @@ test('release contract: prompt-manager guidance keeps cdState dynamic and discou
     assert.ok(promptGuide.includes('UtilityDirective_ColorFormatting'));
 });
 
-test('release contract: AI prompt avoids legacy HTML and tone grammar', () => {
+test('release contract: AI prompt documents closed optional tone grammar and avoids legacy HTML', () => {
     const promptGuide = read('docs/ai-prompt.md');
-    assert.ok(promptGuide.includes('Do not use HTML <font> tags, named-color tags, or :tone syntax.'));
-    assert.ok(promptGuide.includes('Do not put quotation marks inside [cN]...[/c]'));
+
+    assert.match(promptGuide, /(?:do not use|avoid|forbid).*?<font>/i);
+    assert.match(promptGuide, /(?:do not use|avoid|forbid).*?named-color/i);
+
+    assert.equal(promptGuide.includes('Do not use HTML <font> tags, named-color tags, or :tone syntax.'), false);
+    assert.equal(/tone grammar.*?(?:intentionally )?not part of the protocol/i.test(promptGuide), false);
+
+    assert.ok(promptGuide.includes('[cN]Dialogue[/c]'));
+    assert.match(promptGuide, /do not (?:put|include) quotation marks inside/i);
+
+    for (const tone of DIALOGUE_TONES) {
+        assert.ok(promptGuide.includes(`[cN:${tone}]`), tone);
+    }
+
+    assert.equal(promptGuide.includes('[cN:normal]'), false);
+    assert.equal(promptGuide.includes(':normal'), false);
+
+    assert.match(promptGuide, /optional (?:dialogue )?tones?|tones? (?:is|are) optional/i);
+    assert.match(promptGuide, /(?:ordinary|normal)[\s\S]{0,80}?(?:omit|without|no tone|untoned|untagged)|(?:omit|without|no tone|untoned|untagged)[\s\S]{0,80}?(?:ordinary|normal)/i);
+    assert.match(promptGuide, /(?:utterance|delivery)[\s\S]{0,80}?(?:identity|not (?:character|speaker) identity)|(?:identity)[\s\S]{0,80}?(?:utterance|delivery)/i);
+    assert.match(promptGuide, /(?:closed|supported|allowed|canonical|valid)[\s\S]{0,80}?(?:tones?|vocabulary)|(?:tones?|vocabulary)[\s\S]{0,80}?(?:closed|supported|restricted)/i);
 });
 
 test('release contract: pending Review ephemerality is explicit in docs and UI', () => {
@@ -152,6 +178,20 @@ test('release contract: Regex guide links the AI prompt and separates responsibi
     assert.ok(regexGuide.includes('[recommended AI prompt](ai-prompt.md)'));
     assert.ok(regexGuide.includes('Dialogue display script'));
     assert.ok(regexGuide.includes('Control-record prompt-hygiene script'));
+
+    assert.ok(regexGuide.includes('regex-dialogue-display.json'));
+    assert.ok(regexGuide.includes('[cN]...[/c]'));
+    assert.match(regexGuide, /\[cN:(?:tone|whisper|shout|measured|tremble)\]/);
+
+    for (const tone of DIALOGUE_TONES) {
+        assert.ok(regexGuide.toLowerCase().includes(tone.toLowerCase()), tone);
+    }
+
+    assert.match(regexGuide, /(?:custom-)?cd-tone-/);
+    assert.match(regexGuide, /(?:unsupported|invalid|unknown) tone[s]?[\s\S]{0,60}?(?:remain raw|not transformed|untransformed|not matched)/i);
+
+    assert.match(regexGuide, /Alter Outgoing Prompt/);
+    assert.match(regexGuide, /Alter Chat Display/);
 });
 
 test('release contract: current release screenshots exist and stale screenshot names are gone', () => {

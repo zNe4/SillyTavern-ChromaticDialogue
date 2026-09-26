@@ -19,6 +19,7 @@ Version `1.0.1` is the current stable release. It keeps the complete `1.0.0` fea
 - WCAG-style minimum contrast adjustment against the current chat background.
 - Immediate generated CSS refresh when assignments or the active chat change.
 - Strict-write metadata hardening with tolerant reads for older/corrupt data.
+- Optional per-utterance dialogue tones — `whisper`, `shout`, `measured`, and `tremble` — while ordinary `[cN]...[/c]` dialogue remains fully supported.
 - Native SillyTavern Regex for display formatting and outgoing-prompt cleanup; stored chat text is never rewritten by Chromatic Dialogue.
 - Responsive, keyboard-accessible panel controls with no build step or external runtime dependency.
 
@@ -59,25 +60,25 @@ The default GitHub branch is the normal installation source. A separate npm pack
 
 Chromatic Dialogue deliberately separates three jobs:
 
-1. **Display Regex** — renders `[cN]...[/c]` as colored dialogue in the chat display.
+1. **Display Regex** — renders ordinary `[cN]...[/c]` and optional `[cN:tone]...[/c]` dialogue in the chat display. The supported tones are `whisper`, `shout`, `measured`, and `tremble`.
 2. **Prompt-hygiene Regex** — removes internal `CD_NEW` registration comments from later outgoing LLM prompts while leaving stored messages intact.
 3. **AI formatting prompt** — tells the model how to reuse existing IDs and propose genuinely new speakers.
 
 Follow the [complete Regex setup guide](docs/regex-setup.md), then copy the [recommended AI prompt](docs/ai-prompt.md) if you want Review or Automatic registration.
 
-The display Regex transforms this stored marker:
+The unified display Regex transforms ordinary dialogue such as:
 
 ```text
 [c1]Good morning.[/c]
 ```
 
-into display-only HTML equivalent to:
+and optional toned dialogue such as:
 
-```html
-<span class="cd-c1">“Good morning.”</span>
+```text
+[c1:whisper]Keep your voice down.[/c]
 ```
 
-SillyTavern exposes the rendered custom class as `custom-cd-c1`, which is what Chromatic Dialogue's generated CSS targets. The raw `[c1]...[/c]` marker stays in chat storage and in normal conversation history sent to the model.
+into display-only spans that keep the `cd-c1` character class separate from the optional `cd-tone-*` presentation class. SillyTavern exposes these as `custom-cd-c1` and, when present, classes such as `custom-cd-tone-whisper`. Character color remains owned by `custom-cd-c1`; tone changes typography only. The raw markers stay in chat storage and in normal conversation history sent to the model.
 
 The separate prompt-hygiene Regex removes only one-line `<!-- CD_NEW ... -->` control records from subsequent outgoing prompts. It does not remove dialogue markers and does not mutate stored chat messages.
 
@@ -174,7 +175,10 @@ The mode is saved separately for each chat and affects **future received message
 
 Use the full [AI prompt guide](docs/ai-prompt.md) rather than teaching the model the protocol ad hoc. The important rules are:
 
-- Spoken dialogue: `[cN]Dialogue[/c]`.
+- Ordinary spoken dialogue: `[cN]Dialogue[/c]`.
+- Optional dialogue tones: `[cN:whisper]Dialogue[/c]`, `[cN:shout]Dialogue[/c]`, `[cN:measured]Dialogue[/c]`, or `[cN:tremble]Dialogue[/c]`.
+- Tones are optional and per utterance; ordinary speech should remain untoned, and tone never changes the speaker's assignment identity.
+- The tone vocabulary is closed to `whisper`, `shout`, `measured`, and `tremble`; unsupported/freeform tones and `:normal` are not part of the protocol.
 - Narration/actions/unspoken thoughts: outside markers.
 - Do not put quotation marks inside the markers when using the supplied display Regex; it adds them for display.
 - Existing speakers reuse the ID shown in `{{cdState}}`.
@@ -213,11 +217,22 @@ The important requirement is evaluation order, not the variable name: initialize
 
 Use lowercase IDs from `c1` through `c99`.
 
-One dialogue segment:
+One ordinary dialogue segment:
 
 ```text
 [c1]Good morning.[/c]
 ```
+
+Optional delivery tones apply to one utterance only:
+
+```text
+[c1:whisper]Keep your voice down.[/c]
+[c1:shout]RUN![/c]
+[c1:measured]You have one opportunity.[/c]
+[c1:tremble]I... I heard something.[/c]
+```
+
+Use tones sparingly. Ordinary speech should continue to use `[c1]...[/c]`, and unsupported tones remain raw instead of silently falling back.
 
 Multiple speakers with narration outside the markers:
 
@@ -284,7 +299,7 @@ Switching chats refreshes the panel, mode selector, pending view, and generated 
 
 ## Max Depth and streaming
 
-Use Min Depth `0` and Max Depth `50` as the balanced display-Regex recommendation. Messages older than Max Depth can show raw `[cN]...[/c]` markers because the display Regex is no longer applied. Choose **Unlimited** when you want the entire visible transcript formatted.
+Use Min Depth `0` and Max Depth `50` as the balanced display-Regex recommendation. Messages older than Max Depth can show raw ordinary or toned markers because the display Regex is no longer applied. Choose **Unlimited** when you want the entire visible transcript formatted.
 
 For the prompt-hygiene Regex, use **Unlimited** depth so historical `CD_NEW` records do not re-enter later LLM prompts.
 
@@ -294,7 +309,7 @@ During streaming, an opening marker or incomplete dialogue may remain temporaril
 
 Chromatic Dialogue still loads safely if either Regex script is missing or disabled:
 
-- Without the **display Regex**, assignments remain intact but raw `[cN]...[/c]` markers are visible.
+- Without the **display Regex**, assignments remain intact but raw ordinary and toned dialogue markers are visible.
 - Without the **prompt-hygiene Regex**, registration comments remain in later outgoing LLM prompts. Runtime registration still functions, but the model can see old control records again.
 
 Neither case should be fixed by rewriting stored chat messages. Correct the Regex configuration instead.
@@ -303,7 +318,7 @@ Neither case should be fixed by rewriting stored chat messages. Correct the Rege
 
 - Marker syntax is lowercase and limited to `c1` through `c99`.
 - Nested dialogue markers are unsupported.
-- The supplied display Regex inserts fixed curly quotation marks; there is no separate thought or `:tone` syntax.
+- The supplied display Regex inserts fixed curly quotation marks. Optional tone syntax is limited to `whisper`, `shout`, `measured`, and `tremble`; there is no freeform tone grammar or separate thought-marker syntax.
 - `{{cdRoster}}` / `{{cdState}}` expose committed ID/name pairs, not stored colors. The model therefore cannot guarantee that a newly proposed hue is globally unique, although duplicate colors are allowed and can be edited manually.
 - Pending Review cards are deliberately memory-only and disappear on reload/restart if not accepted.
 - There are no global/inherited character defaults, import/export UI, localization layer, or dedicated group-chat semantics.
@@ -312,11 +327,12 @@ Neither case should be fixed by rewriting stored chat messages. Correct the Rege
 
 | Symptom | Check |
 | --- | --- |
-| Raw `[cN]...[/c]` markers | Enable the Global display Regex; confirm **AI Response**, **Alter Chat Display**, the exact Find/Replace values, and the message's depth. |
+| Raw `[cN]...[/c]` or supported toned markers | Import/enable `docs/regex-dialogue-display.json`; confirm **AI Response**, **Alter Chat Display**, the exact Find/Replace values, and the message's depth. |
 | Older messages show raw markers | Increase Max Depth or choose **Unlimited** for the display Regex. |
 | Marker remains raw while streaming | Wait for the complete closing `[/c]`. |
-| Double quotation marks around dialogue | The AI prompt should not include quotes inside `[cN]...[/c]`; the supplied display Regex adds them. |
-| Dialogue has the wrong or no color | Open the relevant chat, confirm its `cN` assignment, use a lowercase marker, and verify the display Regex replacement uses `cd-c$1`. |
+| Double quotation marks around dialogue | The AI prompt should not include quotes inside ordinary or toned dialogue markers; the supplied display Regex adds them. |
+| Dialogue has the wrong or no color | Open the relevant chat, confirm its `cN` assignment, use a lowercase marker, and verify the display Regex replacement uses `cd-c$1 cd-tone-$2`. |
+| Toned marker remains raw | Unsupported tones remain raw. Use exactly `whisper`, `shout`, `measured`, or `tremble`; ordinary speech should omit the tone. |
 | New AI character is not proposed | Confirm the model receives the [recommended AI prompt](docs/ai-prompt.md), `{{cdState}}` expands, and the response contains the required contiguous block of standalone one-line `CD_NEW` records. |
 | A multi-character proposal is rejected | Every new character in one response needs a unique free ID and unique name; IDs must be the first free IDs in ascending order. |
 | A duplicate ID/name proposal in the same message does nothing | That proposal packet is intentionally rejected rather than choosing one conflicting character. |
@@ -351,6 +367,7 @@ The test suite covers normalization, registry queries and macros, parser/validat
 │   ├── ai-prompt.md
 │   ├── development-history.md
 │   ├── regex-control-records.json
+│   ├── regex-dialogue-display.json
 │   ├── regex-setup.md
 │   └── release-checklist.md
 ├── src/
@@ -358,6 +375,7 @@ The test suite covers normalization, registry queries and macros, parser/validat
 │   ├── chat-store.js
 │   ├── color-contrast.js
 │   ├── constants.js
+│   ├── dialogue-syntax.js
 │   ├── domain.js
 │   ├── message-inspector.js
 │   ├── message-reader.js

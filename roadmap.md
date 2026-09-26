@@ -22,6 +22,7 @@ Completed functional phases:
 - Serialized Automatic approval using the same safe Review persistence path.
 - First-success-wins conflict behavior and already-applied reconciliation.
 - Auxiliary-tail tolerant registration: one contiguous `CD_NEW` block may be followed by arbitrary third-party auxiliary content without format-specific parsing, while fragmented registration blocks remain rejected.
+- Optional per-utterance dialogue tones with a closed `whisper` / `shout` / `measured` / `tremble` vocabulary, tone-aware registration validation, unified display Regex rendering, and typography-only presentation that preserves character color.
 
 The historical development plan and acceptance notes that led to this architecture are preserved in [docs/development-history.md](docs/development-history.md).
 
@@ -44,15 +45,15 @@ A17 remains deliberately non-feature work:
 - Import/export UI for assignments.
 - Localization framework.
 - Dedicated group-chat semantics beyond the existing chat-scoped registry behavior.
-- A second thought/tone formatting grammar. The supported AI protocol intentionally stays focused on speaker identity and spoken dialogue.
+- A separate freeform thought/emotion grammar. B2 adds only a small closed set of optional vocal-delivery tones inside the existing dialogue marker; speaker identity remains the `cN` assignment.
 
 ## Post-1.0 development series
 
 The immediate post-1.0 sequence is:
 
 1. **B1 — Auxiliary-tail tolerant registration** — complete in `1.0.1`.
-2. **B2 — Optional dialogue tones** — planned. Tone remains per utterance and must not change assignment identity or persisted schema.
-3. **B3 — Legacy chat migration** — planned after B2. Migration must be explicit, previewed, user-confirmed, and non-automatic.
+2. **B2 — Optional dialogue tones** — implementation and automated integration are complete in the current development branch. Tone remains per utterance and does not change assignment identity or persisted schema. Live SillyTavern validation and the `1.1.0` release gate remain before B2 is considered released.
+3. **B3 — Legacy chat migration** — planned after B2 is released. Migration must be explicit, previewed, user-confirmed, and non-automatic.
 
 Other possible future work includes:
 

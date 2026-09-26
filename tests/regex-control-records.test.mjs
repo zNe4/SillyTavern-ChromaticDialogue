@@ -270,10 +270,10 @@ describe('Task A12: Native SillyTavern Regex Prompt Hygiene', () => {
   test('34. existing display Regex documentation remains present', () => {
     assert.ok(
       docsContent.includes(
-        '/\\[c([1-9]\\d?)\\]([\\s\\S]*?)\\[\\/c\\]/g'
+        '/\\[c([1-9]\\d?)(?::(whisper|shout|measured|tremble))?\\]([\\s\\S]*?)\\[\\/c\\]/g'
       )
     );
-    assert.ok(docsContent.includes('<span class="cd-c$1">“$2”</span>'));
+    assert.ok(docsContent.includes('<span class="cd-c$1 cd-tone-$2">“$3”</span>'));
     assert.ok(docsContent.includes('Marker contract'));
     assert.ok(docsContent.includes('Max Depth'));
     assert.ok(docsContent.includes('Streaming and quote rendering'));

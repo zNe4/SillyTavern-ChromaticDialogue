@@ -5,8 +5,9 @@ SillyTavern's built-in Regex extension is used for two separate, independent
 responsibilities:
 
 1. **Dialogue display script** (Chat Display only)
-   Transforms compact markers such as `[c1]...[/c]` into colored HTML spans
-   for the user interface.
+   Transforms ordinary `[c1]...[/c]` and supported optional tone markers such
+   as `[c1:whisper]...[/c]` into colored/styled HTML spans for the user
+   interface. The importable asset is `regex-dialogue-display.json`.
 2. **Control-record prompt-hygiene script** (Outgoing Prompt only)
    Strips one-line `<!-- CD_NEW ... -->` registration comments from outgoing
    LLM prompts so internal control metadata does not leak back into model context.
@@ -29,32 +30,28 @@ records are absent from outgoing prompts.
 
 | Script | Purpose | Scope | Affects | Alter Chat Display | Alter Outgoing Prompt | Replace With |
 | --- | --- | --- | --- | --- | --- | --- |
-| **Dialogue Display** | `[cN]...[/c]` → styled `<span>` | Global | AI Response (2) | **Enabled** | **Disabled** | `<span class="cd-c$1">“$2”</span>` |
+| **Dialogue Display** | `[cN]...[/c]` or `[cN:tone]...[/c]` → styled `<span>` | Global | AI Response (2) | **Enabled** | **Disabled** | `<span class="cd-c$1 cd-tone-$2">“$3”</span>` |
 | **Prompt Hygiene** | Remove `<!-- CD_NEW ... -->` | Global | AI Response (2) | **Disabled** | **Enabled** | *(empty)* |
 
 ---
 
 ## Script 1: Dialogue display script
 
-Open SillyTavern's built-in **Regex** extension, create a **Global** script, and
-enter the following values exactly.
+The easiest setup is to import `docs/regex-dialogue-display.json`. You may also create the same **Global** script manually in SillyTavern's built-in **Regex** extension using the values below.
 
 ### Find Regex
 
 ```regex
-/\[c([1-9]\d?)\]([\s\S]*?)\[\/c\]/g
+/\[c([1-9]\d?)(?::(whisper|shout|measured|tremble))?\]([\s\S]*?)\[\/c\]/g
 ```
 
 ### Replace With
 
 ```html
-<span class="cd-c$1">“$2”</span>
+<span class="cd-c$1 cd-tone-$2">“$3”</span>
 ```
 
-SillyTavern automatically adds the `custom-` prefix when it renders this class
-in chat. Configure `cd-c$1` here; the resulting rendered class is
-`custom-cd-cN`, which is what Chromatic Dialogue colors. Do not add the prefix
-manually in **Replace With**.
+SillyTavern automatically adds the `custom-` prefix when it renders these classes in chat. `cd-cN` becomes `custom-cd-cN` and continues to own the character color. A supported tone adds a separate `cd-tone-TONE` class, rendered as `custom-cd-tone-TONE`, which controls typography only. Ordinary dialogue produces an inert empty `cd-tone-` class with no CSS rule. Do not add the `custom-` prefix manually in **Replace With**.
 
 ### Required settings
 
@@ -83,11 +80,21 @@ Start with one complete marker:
 The replacement result should be:
 
 ```html
-<span class="cd-c1">“Good morning.”</span>
+<span class="cd-c1 cd-tone-">“Good morning.”</span>
 ```
 
-In the rendered chat, SillyTavern exposes that class as `custom-cd-c1` after
-adding its automatic prefix.
+In the rendered chat, SillyTavern exposes the character class as `custom-cd-c1` after adding its automatic prefix.
+
+Then test the four supported optional tones:
+
+```text
+[c1:whisper]Keep your voice down.[/c]
+[c1:shout]RUN![/c]
+[c1:measured]You have one opportunity.[/c]
+[c1:tremble]I... I heard something.[/c]
+```
+
+They should render with the same `custom-cd-c1` character color plus the corresponding `custom-cd-tone-whisper`, `custom-cd-tone-shout`, `custom-cd-tone-measured`, or `custom-cd-tone-tremble` presentation class. Unsupported tones remain raw and are not transformed.
 
 Then test multiple and multiline dialogue:
 
@@ -124,6 +131,9 @@ complete chat workflow. Continue with a disposable real chat.
 - The assignment form accepts uppercase input such as `C1` and stores `c1`, but
   this Regex is case-sensitive: `[C1]...[/c]` does not match.
 - Multiple markers and multiline dialogue are supported.
+- Optional tone markers use the closed vocabulary `whisper`, `shout`, `measured`, and `tremble`.
+- Ordinary speech remains `[cN]...[/c]`; `:normal` is not a supported tone.
+- Unsupported tones remain raw and are not transformed rather than falling back to ordinary rendering.
 - Nested markers are invalid.
 - Narration and actions should remain outside markers.
 - An opening marker without `[/c]` remains raw.
@@ -138,6 +148,9 @@ Invalid examples:
 [c01]Leading zero.[/c]
 [c100]Out of range.[/c]
 [C1]Uppercase marker.[/c]
+[c1:cry]Unsupported tone.[/c]
+[c1:Whisper]Tone names are case-sensitive.[/c]
+[c1:normal]Normal speech should omit the tone.[/c]
 [c1]Missing closing marker.
 ```
 
@@ -156,11 +169,7 @@ different mobile default.
 During streaming, an incomplete marker may remain temporarily visible until
 its closing `[/c]` arrives. A complete valid marker then transforms normally.
 
-The replacement supplies fixed curly quotation marks. SillyTavern may render
-recognized quotation marks as a nested `<q>` element. Chromatic Dialogue's
-generated rules color both the marker span and nested `<q>` elements, so the
-selected color remains visible across the verified themes. Version `1.0.0
-does not provide configurable quote glyphs.
+The replacement supplies fixed curly quotation marks. SillyTavern may render recognized quotation marks as a nested `<q>` element. Chromatic Dialogue's generated rules keep the selected character color visible, while the static tone rules inherit their typography into nested `<q>` elements without changing color. Quote glyphs are not currently configurable.
 
 ---
 
@@ -281,7 +290,9 @@ Neither script will ever corrupt or rewrite the stored chat transcript.
 | Some text remains raw while streaming | Wait for the complete closing `[/c]`. |
 | Narration gains quotation marks | Keep narration outside `[cN]...[/c]`. |
 | Nested dialogue renders incorrectly | Remove nesting; nested markers are unsupported. |
-| Marker transforms but has no expected color | Confirm that the active chat has the matching `cN` assignment, Script 1 **Replace With** uses `cd-c$1`, and SillyTavern renders the class as `custom-cd-cN`. |
+| Marker transforms but has no expected color | Confirm that the active chat has the matching `cN` assignment, Script 1 **Replace With** uses `cd-c$1 cd-tone-$2`, and SillyTavern renders the character class as `custom-cd-cN`. |
+| Supported tone has no visible typography | Confirm the display asset is `regex-dialogue-display.json`, the marker uses one of `whisper`, `shout`, `measured`, or `tremble`, and the rendered element has the corresponding `custom-cd-tone-*` class. |
+| Toned marker remains raw | Unsupported tones remain raw. Use exactly `whisper`, `shout`, `measured`, or `tremble`, with lowercase syntax such as `[c1:whisper]...[/c]`. |
 | Prompts are unexpectedly transformed | Ensure Script 1 has **Alter Outgoing Prompt** disabled. |
 | `<!-- CD_NEW ... -->` appears in outgoing prompts | Confirm Script 2 is enabled, has **Alter Outgoing Prompt** enabled, and depth is set to **Unlimited**. |
 | Dialogue missing from prompts | Verify Script 2 **Find Regex** matches `CD_NEW` comments only and does not match dialogue markers. |
