@@ -2,6 +2,31 @@
 
 All notable changes to Chromatic Dialogue are documented here.
 
+## [1.1.1] - 2026-09-26
+
+Patch release adding managed setup and repair for Chromatic Dialogue's two required global SillyTavern Regex scripts.
+
+### Added
+
+- A global **Regex integration** section in the Chromatic Dialogue settings panel.
+- Per-script status for **Dialogue display** and **Prompt hygiene**, including `Current`, `Missing`, `Update available`, and `Conflict` states.
+- An explicit **Install / Update Regex** action that installs missing managed scripts or repairs outdated ones.
+- Safe detection of SillyTavern's built-in Regex extension being disabled, without enabling it automatically.
+- End-to-end coverage for the real settings UI → Regex manager → SillyTavern context workflow.
+
+### Safety and compatibility
+
+- Regex settings are never silently installed or updated; changes occur only after an explicit user action.
+- Existing valid runtime UUIDs are preserved when a managed script is repaired.
+- Unknown/custom fields on an existing managed script are preserved.
+- Unrelated global Regex scripts keep their data and relative order.
+- Duplicate managed script names are treated as a conflict and are never guessed at, deleted, or overwritten automatically.
+- Missing scripts receive fresh runtime UUIDs; exported JSON asset IDs are not treated as installed-script identity.
+- A synchronous settings-save failure restores the previous Regex settings value.
+- Successful repair can refresh the current chat, while no-chat operation remains fully supported.
+- A chat-reload failure does not roll back an already-saved Regex repair.
+- The `1.1.0` dialogue-tone grammar, rendering, persistence model, and registration behavior are unchanged.
+
 ## [1.1.0] - 2026-09-26
 
 Minor release adding optional per-utterance vocal-delivery tones while preserving the existing character-color and registration architecture.

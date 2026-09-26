@@ -26,6 +26,26 @@ records are absent from outgoing prompts.
 
 ---
 
+## Recommended managed setup
+
+Chromatic Dialogue `1.1.1` can inspect and manage these two **Global** Regex scripts directly from **Extensions -> Chromatic Dialogue -> Regex integration**.
+
+The section reports each required script as **Current**, **Missing**, **Update available**, or **Conflict**. When one or both scripts are missing or outdated, press **Install / Update Regex**. Chromatic Dialogue then installs only missing managed scripts and repairs only the managed fields of outdated matching scripts.
+
+The managed workflow is deliberately explicit:
+
+- status inspection is automatic and read-only;
+- Regex settings are changed only after the user presses **Install / Update Regex**;
+- an existing valid runtime UUID is preserved during repair;
+- unrelated global Regex scripts and unknown/custom fields are preserved;
+- duplicate exact managed script names produce **Conflict** and are not resolved automatically;
+- if SillyTavern's built-in Regex extension is disabled, Chromatic Dialogue reports that state but does not enable it;
+- the control works without an active chat; when a chat is active, a successful repair may reload it so display changes take effect immediately.
+
+The downloadable JSON assets remain the authoritative manual fallback and are also useful for inspection or recovery. Their exported `id` values are not used as installed-script identity; managed matching uses the exact script names.
+
+---
+
 ## Overview of Regex responsibilities
 
 | Script | Purpose | Scope | Affects | Alter Chat Display | Alter Outgoing Prompt | Replace With |
@@ -37,7 +57,7 @@ records are absent from outgoing prompts.
 
 ## Script 1: Dialogue display script
 
-The easiest setup is to import `docs/regex-dialogue-display.json`. You may also create the same **Global** script manually in SillyTavern's built-in **Regex** extension using the values below.
+The recommended setup is the managed **Regex integration** control described above. For manual fallback, import `docs/regex-dialogue-display.json` or create the same **Global** script manually in SillyTavern's built-in **Regex** extension using the values below.
 
 ### Find Regex
 
@@ -194,7 +214,7 @@ the model to append an internal registration comment:
   constructing subsequent LLM prompts, keeping prompts clean without re-feeding
   historical control records to the model.
 
-### Import from JSON (Recommended)
+### Import from JSON (Manual fallback)
 
 1. Open SillyTavern's **Regex** extension panel.
 2. Click **Import** (or the folder icon).

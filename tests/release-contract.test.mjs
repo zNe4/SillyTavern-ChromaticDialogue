@@ -42,7 +42,7 @@ test('release contract: package and manifest versions match stable release', () 
     const pkg = parseJson('package.json');
     const manifest = parseJson('manifest.json');
     assert.equal(pkg.version, manifest.version);
-    assert.equal(pkg.version, '1.1.0');
+    assert.equal(pkg.version, '1.1.1');
 });
 
 test('release contract: manifest entry files exist', () => {

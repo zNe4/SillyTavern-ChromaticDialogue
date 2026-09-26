@@ -2,7 +2,7 @@
 
 Chromatic Dialogue is a chat-scoped dialogue color and speaker-registration extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern). It uses compact markers such as `[c1]...[/c]`, per-chat character assignments, and SillyTavern's built-in Regex extension to render recurring speakers with consistent colors.
 
-Version `1.1.0` is the current stable release. It keeps the complete `1.0.1` feature set — including automatic contrast correction and auxiliary-tail compatibility — and adds optional per-utterance vocal-delivery tones: `whisper`, `shout`, `measured`, and `tremble`. Tone does not change character identity, persisted assignment state, or the existing ordinary `[cN]...[/c]` syntax.
+Version `1.1.1` is the current stable release. It keeps the complete `1.1.0` tone feature set and adds managed Regex setup in the Chromatic Dialogue panel: the extension can detect whether its two required global Regex scripts are current, missing, outdated, conflicting, or blocked because SillyTavern's built-in Regex extension is disabled. Regex changes are still explicit and user-controlled; nothing is silently installed or overwritten.
 
 ## Features
 
@@ -16,14 +16,15 @@ Version `1.1.0` is the current stable release. It keeps the complete `1.0.1` fea
   - **Automatic** — safely auto-register valid proposals and leave uncertain/conflicting cases pending for manual review.
 - Atomic handling of several new characters introduced by one assistant message.
 - First-success-wins protection for competing proposals.
-- WCAG-style minimum contrast adjustment against the current chat background.
+- Automatic contrast correction with a WCAG-style minimum ratio against the current chat background.
 - Immediate generated CSS refresh when assignments or the active chat change.
 - Strict-write metadata hardening with tolerant reads for older/corrupt data.
 - Optional per-utterance dialogue tones — `whisper`, `shout`, `measured`, and `tremble` — while ordinary `[cN]...[/c]` dialogue remains fully supported.
 - Native SillyTavern Regex for display formatting and outgoing-prompt cleanup; stored chat text is never rewritten by Chromatic Dialogue.
+- Managed Regex integration status plus an explicit **Install / Update Regex** action that safely installs or repairs Chromatic Dialogue's two required global scripts.
 - Responsive, keyboard-accessible panel controls with no build step or external runtime dependency.
 
-Chromatic Dialogue does **not** install or edit Regex scripts automatically, rewrite raw assistant messages, persist unresolved Review cards, or use a separate custom chat-rendering engine.
+Chromatic Dialogue does **not** silently install or edit Regex scripts, rewrite raw assistant messages, persist unresolved Review cards, or use a separate custom chat-rendering engine. Regex changes happen only after the user explicitly presses the managed Regex action.
 
 ## Requirements
 
@@ -44,8 +45,9 @@ Chromatic Dialogue does **not** install or edit Regex scripts automatically, rew
 
 4. Complete the installation and reload SillyTavern.
 5. Open **Extensions -> Chromatic Dialogue**.
-6. Complete the one-time Regex setup below.
-7. If you want AI-managed character registration, add the recommended Chromatic Dialogue prompt to a SillyTavern prompt field where custom macros are expanded.
+6. In the **Regex integration** section, press **Install / Update Regex** if either required script is missing or outdated.
+7. Confirm both required Regex statuses show **Current**.
+8. If you want AI-managed character registration, add the recommended Chromatic Dialogue prompt to a SillyTavern prompt field where custom macros are expanded.
 
 The default GitHub branch is the normal installation source. A separate npm package, installer, or server plugin is not required.
 
@@ -64,7 +66,7 @@ Chromatic Dialogue deliberately separates three jobs:
 2. **Prompt-hygiene Regex** — removes internal `CD_NEW` registration comments from later outgoing LLM prompts while leaving stored messages intact.
 3. **AI formatting prompt** — tells the model how to reuse existing IDs and propose genuinely new speakers.
 
-Follow the [complete Regex setup guide](docs/regex-setup.md), then copy the [recommended AI prompt](docs/ai-prompt.md) if you want Review or Automatic registration.
+The recommended setup is now managed directly from **Extensions -> Chromatic Dialogue -> Regex integration**. Press **Install / Update Regex** when either required script is missing or outdated, then confirm both statuses show **Current**. The [complete Regex setup guide](docs/regex-setup.md) documents the managed workflow, conflict handling, and manual fallback. Copy the [recommended AI prompt](docs/ai-prompt.md) if you want Review or Automatic registration.
 
 The unified display Regex transforms ordinary dialogue such as:
 
@@ -91,7 +93,7 @@ The separate prompt-hygiene Regex removes only one-line `<!-- CD_NEW ... -->` co
 3. Leave the mode at **Review** or choose **Off** if you do not want AI proposals processed.
 4. Enter an unused ID such as `c1`, a character name, and a color such as `#56B4E9`.
 5. Select **Add assignment**.
-6. Make sure the display Regex is enabled.
+6. Confirm **Regex integration** shows **Dialogue display — Current**.
 7. Use the corresponding marker in an assistant response:
 
    ```text
@@ -100,7 +102,7 @@ The separate prompt-hygiene Regex removes only one-line `<!-- CD_NEW ... -->` co
 
 ### AI-managed workflow
 
-1. Complete both Regex setup steps.
+1. Confirm both required scripts show **Current** in **Regex integration**.
 2. Add the [recommended AI prompt](docs/ai-prompt.md).
 3. Open a chat and choose **Review** or **Automatic**.
 4. Let the model reuse IDs from `{{cdState}}` and emit `CD_NEW` records only for genuinely new speakers.
@@ -312,7 +314,7 @@ Chromatic Dialogue still loads safely if either Regex script is missing or disab
 - Without the **display Regex**, assignments remain intact but raw ordinary and toned dialogue markers are visible.
 - Without the **prompt-hygiene Regex**, registration comments remain in later outgoing LLM prompts. Runtime registration still functions, but the model can see old control records again.
 
-Neither case should be fixed by rewriting stored chat messages. Correct the Regex configuration instead.
+Neither case should be fixed by rewriting stored chat messages. Open **Extensions -> Chromatic Dialogue -> Regex integration**: missing or outdated scripts can be repaired with **Install / Update Regex**. If duplicate managed script names are detected, Chromatic Dialogue reports **Conflict** and requires you to resolve the duplicates manually in SillyTavern's Regex settings. If SillyTavern's built-in Regex extension is disabled, Chromatic Dialogue reports that state but does not enable it automatically.
 
 ## Current limitations
 
@@ -327,7 +329,7 @@ Neither case should be fixed by rewriting stored chat messages. Correct the Rege
 
 | Symptom | Check |
 | --- | --- |
-| Raw `[cN]...[/c]` or supported toned markers | Import/enable `docs/regex-dialogue-display.json`; confirm **AI Response**, **Alter Chat Display**, the exact Find/Replace values, and the message's depth. |
+| Raw `[cN]...[/c]` or supported toned markers | Open **Regex integration** and use **Install / Update Regex** if Dialogue display is Missing or Update available. For manual fallback, verify `docs/regex-dialogue-display.json`, **AI Response**, **Alter Chat Display**, and the message's depth. |
 | Older messages show raw markers | Increase Max Depth or choose **Unlimited** for the display Regex. |
 | Marker remains raw while streaming | Wait for the complete closing `[/c]`. |
 | Double quotation marks around dialogue | The AI prompt should not include quotes inside ordinary or toned dialogue markers; the supplied display Regex adds them. |
@@ -338,7 +340,7 @@ Neither case should be fixed by rewriting stored chat messages. Correct the Rege
 | A duplicate ID/name proposal in the same message does nothing | That proposal packet is intentionally rejected rather than choosing one conflicting character. |
 | Automatic leaves a pending card | Automatic could not safely finish after fresh validation; inspect the card and approve/dismiss it manually. |
 | Pending card disappeared after reload | Pending reviews are intentionally session-only. Recover the values from the raw `CD_NEW` record and add them manually if desired. |
-| `CD_NEW` comments appear in later LLM context | Import/enable `docs/regex-control-records.json` and use Unlimited depth for that prompt-only Regex. |
+| `CD_NEW` comments appear in later LLM context | Open **Regex integration** and repair Prompt hygiene if needed. For manual fallback, verify `docs/regex-control-records.json` and Unlimited depth for that prompt-only Regex. |
 | Form or mode selector is disabled | Open or create a chat first. |
 
 ## Development and verification
@@ -357,7 +359,7 @@ find . -type f \( -name '*.js' -o -name '*.mjs' \) -print0 \
   | xargs -0 -n1 node --check
 ```
 
-The test suite covers normalization, registry queries and macros, parser/validator behavior, contrast correction, strict persistence, message inspection, Review workflows, operation-mode persistence/UI, serialized Automatic approval, first-success-wins conflicts, panel lifecycle, CSS generation, Regex prompt hygiene, and release contracts.
+The test suite covers normalization, registry queries and macros, parser/validator behavior, contrast correction, strict persistence, message inspection, Review workflows, operation-mode persistence/UI, serialized Automatic approval, first-success-wins conflicts, panel lifecycle, CSS generation, Regex prompt hygiene, managed Regex inspection/repair/UI integration, and release contracts.
 
 ## Project structure
 

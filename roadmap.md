@@ -2,7 +2,7 @@
 
 ## Current state
 
-Chromatic Dialogue `1.1.0` is the current stable release. The `1.0.0` release remains the first stable release, `1.0.1` adds auxiliary-tail registration compatibility, and `1.1.0` adds optional per-utterance vocal-delivery tones while preserving the existing assignment schema and character-color model.
+Chromatic Dialogue `1.1.1` is the current stable release. The `1.0.0` release remains the first stable release, `1.0.1` adds auxiliary-tail registration compatibility, `1.1.0` adds optional per-utterance vocal-delivery tones, and `1.1.1` adds explicit managed setup/repair for the two required global SillyTavern Regex scripts without introducing silent configuration changes.
 
 The functional architecture through Automatic mode is complete and has been validated by the automated suite and in real SillyTavern roleplay flows, including cross-theme, constrained-width, Review, Automatic, multi-character registration, prompt-hygiene, and auxiliary-tail compatibility testing.
 
@@ -23,6 +23,7 @@ Completed functional phases:
 - First-success-wins conflict behavior and already-applied reconciliation.
 - Auxiliary-tail tolerant registration: one contiguous `CD_NEW` block may be followed by arbitrary third-party auxiliary content without format-specific parsing, while fragmented registration blocks remain rejected.
 - Optional per-utterance dialogue tones with a closed `whisper` / `shout` / `measured` / `tremble` vocabulary, tone-aware registration validation, unified display Regex rendering, and typography-only presentation that preserves character color.
+- Managed Regex integration with global status inspection, explicit install/update repair, UUID/custom-field preservation, conflict protection, Regex-disabled detection, and no-chat operation.
 
 The historical development plan and acceptance notes that led to this architecture are preserved in [docs/development-history.md](docs/development-history.md).
 
@@ -53,7 +54,8 @@ The immediate post-1.0 sequence is:
 
 1. **B1 — Auxiliary-tail tolerant registration** — complete in `1.0.1`.
 2. **B2 — Optional dialogue tones** — complete in `1.1.0`. The closed `whisper` / `shout` / `measured` / `tremble` vocabulary is live-validated in SillyTavern; tone remains per utterance and does not change assignment identity or persisted schema.
-3. **B3 — Legacy chat migration** — next development series. Migration must be explicit, previewed, user-confirmed, and non-automatic.
+3. **B2.7 — Managed Regex setup** — complete in `1.1.1`. Chromatic Dialogue now detects missing/outdated/conflicting managed Regex scripts and offers an explicit install/update action while preserving unrelated user configuration and never enabling Regex or changing scripts silently.
+4. **B3 — Legacy chat migration** — next development series. Migration must be explicit, previewed, user-confirmed, and non-automatic.
 
 Other possible future work includes:
 
