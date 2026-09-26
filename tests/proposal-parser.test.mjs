@@ -839,3 +839,111 @@ test('49. fragmentation takes precedence over malformed payload parsing', () => 
         errors: ['misplaced-control-record'],
     });
 });
+
+test('50. new character with each supported tone satisfies marker use', () => {
+    for (const tone of ['whisper', 'shout', 'measured', 'tremble']) {
+        const input = [
+            `[c2:${tone}]Mara speaks.[/c]`,
+            '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        ].join('\n');
+
+        assert.deepEqual(parseRegistrationTrailer(input), {
+            ok: true,
+            proposals: [
+                {
+                    id: 'c2',
+                    name: 'Mara',
+                    color: '#B86FD4',
+                },
+            ],
+            errors: [],
+        });
+    }
+});
+
+test('51. unsupported tone alone does not satisfy marker use', () => {
+    const input = [
+        '[c2:cry]Mara cries.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: false,
+        proposals: [],
+        errors: ['marker-not-used'],
+    });
+});
+
+test('52. :normal is not supported as a tone marker', () => {
+    const input = [
+        '[c2:normal]Mara speaks.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: false,
+        proposals: [],
+        errors: ['marker-not-used'],
+    });
+});
+
+test('53. case sensitivity rejects uppercase or mixed-case tone markers', () => {
+    const input = [
+        '[c2:Whisper]Mara whispers.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: false,
+        proposals: [],
+        errors: ['marker-not-used'],
+    });
+});
+
+test('54. toned marker after registration still satisfies full-source marker rule', () => {
+    const input = [
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        '',
+        'Some arbitrary auxiliary material.',
+        '',
+        '[c2:whisper]Later use.[/c]',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+        ],
+        errors: [],
+    });
+});
+
+test('55. atomic multi-proposal use can mix normal and toned markers', () => {
+    const input = [
+        '[c2]Normal speaker.[/c]',
+        '[c3:measured]Measured speaker.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        '<!-- CD_NEW {"id":"c3","name":"Jon","color":"#56B4E9"} -->',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+            {
+                id: 'c3',
+                name: 'Jon',
+                color: '#56B4E9',
+            },
+        ],
+        errors: [],
+    });
+});

@@ -3,6 +3,7 @@ import {
     normalizeHexColor,
     normalizeName,
 } from './domain.js';
+import { hasDialogueMarkerForId } from './dialogue-syntax.js';
 
 const CONTROL_COMMENT_PATTERN = /<!--[ \t]*CD_NEW\b/;
 const MULTILINE_CD_NEW_COMMENT_PATTERN = /<!--\s*CD_NEW\b[\s\S]*?-->/g;
@@ -252,7 +253,7 @@ export function parseRegistrationTrailer(message) {
         }
         seenNames.add(proposal.name);
 
-        if (!message.includes(`[${proposal.id}]`)) {
+        if (!hasDialogueMarkerForId(message, proposal.id)) {
             phase2Errors.add('marker-not-used');
         }
     }
