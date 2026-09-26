@@ -108,7 +108,17 @@ test('release contract: recommended AI prompt documents exact registration shape
     const promptGuide = read('docs/ai-prompt.md');
     assert.ok(promptGuide.includes('<!-- CD_NEW {"id":"cN","name":"Character Name","color":"#RRGGBB"} -->'));
     assert.ok(promptGuide.includes('[cN]Dialogue[/c]'));
-    assert.ok(promptGuide.includes('must not be followed by narration, dialogue, notes, or any other text'));
+    assert.match(promptGuide, /after (?:all )?visible story/i);
+    assert.match(promptGuide, /contiguous (?:registration )?block/i);
+    assert.match(promptGuide, /before (?:any )?(?:auxiliary|non-story)/i);
+    assert.match(
+        promptGuide,
+        /(?:no (?:return to )?(?:narration|spoken dialogue|dialogue)|must not be followed by (?:narration|dialogue)|do not resume (?:narration|dialogue))[\s\S]{0,80}?(?:after|registration)/i
+    );
+    assert.equal(
+        promptGuide.includes('must not be followed by narration, dialogue, notes, or any other text'),
+        false
+    );
 });
 
 test('release contract: prompt-manager guidance keeps cdState dynamic and discourages literal newline escapes', () => {

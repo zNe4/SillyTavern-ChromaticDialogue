@@ -235,6 +235,12 @@ records back into LLM context.
   `[c1]...[/c]` are not touched by this script and remain available to the model.
 - **`CD_NEW` records are removed from outgoing history**: The control comment
   line is omitted from subsequent prompts.
+- **Position-independent within a message**: Each standalone `CD_NEW` control
+  line is removed even when arbitrary auxiliary content follows it; the cleanup
+  does not require the control record to be the final line of the message.
+- **Surrounding prefix/suffix content is preserved**: Prompt hygiene removes only
+  the matching standalone control-record line. Content before or after it is
+  left unchanged, and the stored chat remains byte-for-byte intact.
 - **Non-destructive & safe**: Disabling this cleanup script does not corrupt
   Chromatic Dialogue or chat storage; it only means raw `CD_NEW` comments may
   reach the LLM in future turns.

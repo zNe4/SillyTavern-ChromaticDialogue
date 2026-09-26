@@ -31,15 +31,17 @@ New speakers:
 - Choose one valid six-digit #RRGGBB color for each new character. Prefer a vivid hue that is visually distinct from other new characters in the same response. Chromatic Dialogue may adjust the stored color to meet contrast requirements.
 - Use each new ID in that character's visible dialogue before registering it.
 
-After all visible story text, append exactly one one-line registration record for each new character:
+After all visible story text, emit exactly one standalone one-line registration record for each new character, keeping all records together as one contiguous registration block:
 <!-- CD_NEW {"id":"cN","name":"Character Name","color":"#RRGGBB"} -->
 
-Registration records:
-- must be the final non-empty lines of the response;
-- must contain exactly id, name, and color;
+Registration block:
+- must come after all visible story text;
+- if other instructions produce auxiliary or non-story content, must appear immediately before any auxiliary or non-story content;
+- must contain exactly id, name, and color in each record;
 - must use unique IDs and unique character names within the response;
 - must be ordered by ascending assigned ID;
-- must not be followed by narration, dialogue, notes, or any other text.
+- no narration or spoken dialogue may resume after the registration block;
+- auxiliary or non-story content may follow when required by other instructions; Chromatic Dialogue does not prescribe its format.
 
 If next=none, do not invent another ID and do not emit CD_NEW for a new speaker.
 </chromatic_dialogue>

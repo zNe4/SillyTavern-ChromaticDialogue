@@ -336,4 +336,75 @@ describe('Task A12: Native SillyTavern Regex Prompt Hygiene', () => {
       /not reconstructed automatically after reload/i
     );
   });
+
+  // 42. single CD_NEW line before arbitrary suffix is removed while suffix is preserved
+  test('42. single CD_NEW line before arbitrary suffix is removed while suffix is preserved', () => {
+    const dialogue =
+      'Mara steps into the corridor.\n\n' +
+      '[c2]We should leave before they notice us.[/c]\n\n';
+    const controlRecord =
+      '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#56B4E9"} -->\n';
+    const suffix =
+      '<div class="aux-container">\n' +
+      '  <span class="status">active</span>\n' +
+      '</div>\n\n' +
+      '### Scene Notes\n' +
+      '- arbitrary auxiliary prose\n' +
+      '- key: value\n';
+
+    const input = dialogue + controlRecord + suffix;
+    const cleaned = applyClean(input);
+
+    assert.equal(cleaned, dialogue + suffix);
+    assert.ok(cleaned.includes('[c2]We should leave before they notice us.[/c]'));
+    assert.ok(cleaned.includes('<div class="aux-container">'));
+    assert.ok(cleaned.includes('### Scene Notes'));
+    assert.equal(cleaned.includes('CD_NEW'), false);
+  });
+
+  // 43. contiguous CD_NEW block before arbitrary suffix is removed while suffix is preserved
+  test('43. contiguous CD_NEW block before arbitrary suffix is removed while suffix is preserved', () => {
+    const dialogue =
+      '[c6]Nobody moves until I say so.[/c]\n\n' +
+      'A second guard lowers his voice.\n\n' +
+      '[c7]This is getting out of hand.[/c]\n\n';
+    const controlRecords =
+      '<!-- CD_NEW {"id":"c6","name":"Captain Vey","color":"#E69F00"} -->\n' +
+      '<!-- CD_NEW {"id":"c7","name":"Guard Nilo","color":"#009E73"} -->\n';
+    const suffix =
+      '<section class="tracker">\n' +
+      '  <item id="1">unclassified payload</item>\n' +
+      '</section>\n\n' +
+      'Arbitrary opaque content following the registration block.\n';
+
+    const input = dialogue + controlRecords + suffix;
+    const cleaned = applyClean(input);
+
+    assert.equal(cleaned, dialogue + suffix);
+    assert.ok(cleaned.includes('[c6]Nobody moves until I say so.[/c]'));
+    assert.ok(cleaned.includes('[c7]This is getting out of hand.[/c]'));
+    assert.ok(cleaned.includes('<section class="tracker">'));
+    assert.ok(cleaned.includes('Arbitrary opaque content following the registration block.'));
+    assert.equal(cleaned.includes('CD_NEW'), false);
+    assert.ok(
+      cleaned.indexOf('[c6]') < cleaned.indexOf('[c7]') &&
+      cleaned.indexOf('[c7]') < cleaned.indexOf('<section class="tracker">')
+    );
+  });
+
+  // 44. documentation notes position-independent removal before auxiliary content while preserving surrounding text
+  test('44. documentation notes position-independent removal before auxiliary content while preserving surrounding text', () => {
+    assert.match(
+      docsContent,
+      /(?:position-independent|arbitrary (?:auxiliary |non-story )?content follows|even (?:when|if) (?:arbitrary|auxiliary|trailing) content)/i
+    );
+    assert.match(
+      docsContent,
+      /(?:surrounding|prefix|suffix)[\s\S]{0,80}?preserved/i
+    );
+    assert.match(
+      docsContent,
+      /stored (?:chat|messages?)[\s\S]{0,120}?(?:unchanged|intact|never mutated)/i
+    );
+  });
 });
