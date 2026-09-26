@@ -679,3 +679,163 @@ test('42. text trailing control record on the same physical line is rejected as 
         errors: ['misplaced-control-record'],
     });
 });
+
+test('43. CRLF line endings work for proposal and auxiliary suffix', () => {
+    const input = [
+        '[c2]Mara speaks.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        'Auxiliary suffix text with CRLF line endings.',
+    ].join('\r\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+        ],
+        errors: [],
+    });
+});
+
+test('44. opaque arbitrary content before and after registration block is accepted', () => {
+    const input = [
+        '# Scene Heading',
+        '',
+        '<div class="narrative-frame">',
+        '    <blockquote>Initial scene setup with indented prose</blockquote>',
+        '</div>',
+        '',
+        '| Turn | Initiative |',
+        '|---|---|',
+        '| 1 | High |',
+        '',
+        '[c2]Mara speaks within narrative.[/c]',
+        '',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        '',
+        '### Epilogue Notes',
+        '',
+        '<section class="tracker-dashboard">',
+        '    <span>Status: Active</span>',
+        '</section>',
+        '',
+        '    Indented scratchpad remarks.',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+        ],
+        errors: [],
+    });
+});
+
+test('45. mixed whitespace between multiple registration records preserves single block', () => {
+    const input = [
+        '[c2]Mara here.[/c]',
+        '[c3]Jon here.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        '\t',
+        ' \t \t ',
+        '\t\t',
+        '<!-- CD_NEW {"id":"c3","name":"Jon","color":"#56B4E9"} -->',
+        'Suffix prose.',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+            {
+                id: 'c3',
+                name: 'Jon',
+                color: '#56B4E9',
+            },
+        ],
+        errors: [],
+    });
+});
+
+test('46. plain CD_NEW token in opaque suffix is harmless', () => {
+    const input = [
+        '[c2]Mara speaks.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        'After registration, note that CD_NEW is documented elsewhere in the manual.',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+        ],
+        errors: [],
+    });
+});
+
+test('47. unrelated HTML comment mentioning CD_NEW in opaque suffix is harmless', () => {
+    const input = [
+        '[c2]Mara speaks.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        'Suffix prose begins here.',
+        '<!-- documentation says this extension uses CD_NEW records -->',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: true,
+        proposals: [
+            {
+                id: 'c2',
+                name: 'Mara',
+                color: '#B86FD4',
+            },
+        ],
+        errors: [],
+    });
+});
+
+test('48. later inline CD_NEW attempt after suffix begins is rejected structurally', () => {
+    const input = [
+        '[c2]Mara.[/c]',
+        '[c3]Jon.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        'ordinary suffix content',
+        'documentation <!-- CD_NEW {"id":"c3","name":"Jon","color":"#56B4E9"} -->',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: false,
+        proposals: [],
+        errors: ['misplaced-control-record'],
+    });
+});
+
+test('49. fragmentation takes precedence over malformed payload parsing', () => {
+    const input = [
+        '[c2]Mara.[/c]',
+        '<!-- CD_NEW {"id":"c2","name":"Mara","color":"#B86FD4"} -->',
+        'ordinary suffix content',
+        '<!-- CD_NEW definitely-not-json -->',
+    ].join('\n');
+
+    assert.deepEqual(parseRegistrationTrailer(input), {
+        ok: false,
+        proposals: [],
+        errors: ['misplaced-control-record'],
+    });
+});
