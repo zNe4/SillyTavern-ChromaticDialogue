@@ -2,6 +2,22 @@
 
 All notable changes to Chromatic Dialogue are documented here.
 
+## [1.0.1] - 2026-09-26
+
+Compatibility patch for SillyTavern presets that append auxiliary or non-story content after the visible roleplay response.
+
+### Fixed
+
+- `CD_NEW` registrations no longer need to be the absolute final content of an assistant message.
+- One contiguous registration block is accepted with arbitrary auxiliary HTML, Markdown, tracker, note, or other non-story content after it.
+- Matching `[cN]` usage may occur anywhere in the source message.
+- Fragmented or multiple registration blocks remain rejected, preserving the existing atomic registration safety model.
+- Prompt-hygiene continues removing standalone `CD_NEW` control lines regardless of position while preserving surrounding content and stored raw messages.
+
+### Changed
+
+- The recommended AI directive now places the contiguous `CD_NEW` block after visible story text and before any auxiliary/non-story content produced by other instructions.
+
 ## [1.0.0] - 2026-09-26
 
 First stable public release. This release promotes the complete, live-validated A0–A17 feature set that was developed on `main` during the pre-release cycle.

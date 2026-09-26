@@ -2,7 +2,9 @@
 
 ## Current state
 
-Chromatic Dialogue `1.0.0` is the first stable release line. The functional architecture through Automatic mode is complete and has been validated by the automated suite and in real SillyTavern roleplay flows, including cross-theme and constrained-width testing.
+Chromatic Dialogue `1.0.1` is the current stable release. The `1.0.0` release remains the first stable release, and `1.0.1` adds a focused compatibility fix for presets that append auxiliary/non-story content after Chromatic Dialogue registration records.
+
+The functional architecture through Automatic mode is complete and has been validated by the automated suite and in real SillyTavern roleplay flows, including cross-theme, constrained-width, Review, Automatic, multi-character registration, prompt-hygiene, and auxiliary-tail compatibility testing.
 
 Completed functional phases:
 
@@ -19,6 +21,7 @@ Completed functional phases:
 - Per-chat Off / Review / Automatic operation modes.
 - Serialized Automatic approval using the same safe Review persistence path.
 - First-success-wins conflict behavior and already-applied reconciliation.
+- Auxiliary-tail tolerant registration: one contiguous `CD_NEW` block may be followed by arbitrary third-party auxiliary content without format-specific parsing, while fragmented registration blocks remain rejected.
 
 The historical development plan and acceptance notes that led to this architecture are preserved in [docs/development-history.md](docs/development-history.md).
 
@@ -43,14 +46,20 @@ A17 remains deliberately non-feature work:
 - Dedicated group-chat semantics beyond the existing chat-scoped registry behavior.
 - A second thought/tone formatting grammar. The supported AI protocol intentionally stays focused on speaker identity and spoken dialogue.
 
-## Possible post-1.0.0 work
+## Post-1.0 development series
 
-Future work should be driven by real usage rather than added pre-release complexity. Candidates include:
+The immediate post-1.0 sequence is:
+
+1. **B1 — Auxiliary-tail tolerant registration** — complete in `1.0.1`.
+2. **B2 — Optional dialogue tones** — planned. Tone remains per utterance and must not change assignment identity or persisted schema.
+3. **B3 — Legacy chat migration** — planned after B2. Migration must be explicit, previewed, user-confirmed, and non-automatic.
+
+Other possible future work includes:
 
 - Optional assignment import/export.
 - Optional richer diagnostics for rejected AI proposal packets.
-- Updated current-version screenshots after the first release UI is frozen.
+- Updated current-version screenshots when useful.
 - Additional accessibility/localization work.
 - Broader browser/device verification.
 
-Any future feature must preserve the current safety boundaries: raw messages are not rewritten by Chromatic Dialogue, committed registry state remains chat-scoped, and Automatic mode must continue to reuse the safe approval/persistence path rather than bypass it.
+Any future feature must preserve the current safety boundaries: raw messages are not rewritten by normal Chromatic Dialogue runtime behavior, unresolved Review cards remain session-only, committed registry state remains chat-scoped, and Automatic mode must continue to reuse the safe approval/persistence path rather than bypass it.

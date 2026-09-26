@@ -2,14 +2,14 @@
 
 Chromatic Dialogue is a chat-scoped dialogue color and speaker-registration extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern). It uses compact markers such as `[c1]...[/c]`, per-chat character assignments, and SillyTavern's built-in Regex extension to render recurring speakers with consistent colors.
 
-Version `1.0.0` is the first stable public release. It includes manual assignments, AI-proposed new speakers, Review and Automatic registration workflows, automatic contrast correction, responsive cross-theme UI hardening, and prompt-hygiene cleanup for internal `CD_NEW` registration records.
+Version `1.0.1` is the current stable release. It keeps the complete `1.0.0` feature set — including automatic contrast correction — and adds compatibility with SillyTavern presets that append auxiliary/non-story content after Chromatic Dialogue registration records.
 
 ## Features
 
 - Independent `c1` through `c99` character assignments for every chat.
 - Manual add, edit, delete, and ID reuse from the Extensions panel.
 - Four prompt macros for compact AI state: `{{cdCount}}`, `{{cdNext}}`, `{{cdRoster}}`, and `{{cdState}}`.
-- AI proposal protocol using final one-line `<!-- CD_NEW {...} -->` records.
+- AI proposal protocol using a contiguous block of one-line `<!-- CD_NEW {...} -->` records, compatible with auxiliary preset output that follows the registration block.
 - Three per-chat operation modes:
   - **Off** — ignore future new-character proposals.
   - **Review** — require manual approval or dismissal.
@@ -102,7 +102,7 @@ The separate prompt-hygiene Regex removes only one-line `<!-- CD_NEW ... -->` co
 1. Complete both Regex setup steps.
 2. Add the [recommended AI prompt](docs/ai-prompt.md).
 3. Open a chat and choose **Review** or **Automatic**.
-4. Let the model reuse IDs from `{{cdState}}` and append `CD_NEW` records only for genuinely new speakers.
+4. Let the model reuse IDs from `{{cdState}}` and emit `CD_NEW` records only for genuinely new speakers.
 5. In **Review**, approve or dismiss the pending proposal. In **Automatic**, safe proposals are committed without a manual click; unsafe or uncertain ones remain pending.
 
 No reload is required when changing operation modes.
@@ -123,7 +123,7 @@ The screenshots below show the same proposal moving from raw assistant output to
 
    ![RP response before the new speaker is approved](docs/images/chromatic-dialogue-rp-before-approval.png)
 
-2. The stored/raw message retains the markers and final `CD_NEW` control record.
+2. The stored/raw message retains the markers and `CD_NEW` control record.
 
    ![Raw assistant message with Chromatic Dialogue markers and CD_NEW](docs/images/chromatic-dialogue-raw-proposal.png)
 
@@ -179,13 +179,15 @@ Use the full [AI prompt guide](docs/ai-prompt.md) rather than teaching the model
 - Do not put quotation marks inside the markers when using the supplied display Regex; it adds them for display.
 - Existing speakers reuse the ID shown in `{{cdState}}`.
 - New speakers use the first unused IDs in ascending order.
-- After all visible story text, append one exact one-line record per new character:
+- After all visible story text, emit one exact one-line record per new character:
 
   ```text
   <!-- CD_NEW {"id":"c6","name":"Mara","color":"#B86FD4"} -->
   ```
 
-- Nothing may follow the final control record.
+- Keep all `CD_NEW` records together as one contiguous registration block.
+- If other prompt/preset instructions produce auxiliary or non-story content, place the registration block immediately before that content.
+- Do not resume narration or spoken dialogue after the registration block.
 - IDs and names must be unique within one proposal packet.
 
 The model proposes the initial color; Chromatic Dialogue checks it against the current background and adjusts the committed color when required for readability.
@@ -315,7 +317,7 @@ Neither case should be fixed by rewriting stored chat messages. Correct the Rege
 | Marker remains raw while streaming | Wait for the complete closing `[/c]`. |
 | Double quotation marks around dialogue | The AI prompt should not include quotes inside `[cN]...[/c]`; the supplied display Regex adds them. |
 | Dialogue has the wrong or no color | Open the relevant chat, confirm its `cN` assignment, use a lowercase marker, and verify the display Regex replacement uses `cd-c$1`. |
-| New AI character is not proposed | Confirm the model receives the [recommended AI prompt](docs/ai-prompt.md), `{{cdState}}` expands, and the response ends with an exact one-line `CD_NEW` record. |
+| New AI character is not proposed | Confirm the model receives the [recommended AI prompt](docs/ai-prompt.md), `{{cdState}}` expands, and the response contains the required contiguous block of standalone one-line `CD_NEW` records. |
 | A multi-character proposal is rejected | Every new character in one response needs a unique free ID and unique name; IDs must be the first free IDs in ascending order. |
 | A duplicate ID/name proposal in the same message does nothing | That proposal packet is intentionally rejected rather than choosing one conflicting character. |
 | Automatic leaves a pending card | Automatic could not safely finish after fresh validation; inspect the card and approve/dismiss it manually. |
