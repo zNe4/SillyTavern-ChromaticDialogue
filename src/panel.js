@@ -32,6 +32,7 @@ import {
     subscribePendingReviewChanges,
 } from './pending-review-store.js';
 import { refreshOperationModeControl } from './mode-panel.js';
+import { refreshRegexIntegrationControl } from './regex-panel.js';
 
 const synchronizedColorPanels = new WeakSet();
 const registeredAssignmentForms = new WeakSet();
@@ -1102,6 +1103,11 @@ export function refreshPanelState(_deps = {}) {
         _deps.refreshOperationModeControl ??
         refreshOperationModeControl;
     refreshModeControl(panel);
+
+    const refreshRegexControl =
+        _deps.refreshRegexIntegrationControl ??
+        refreshRegexIntegrationControl;
+    refreshRegexControl(panel);
 
     const { status, chatId, state } = readActiveChatState();
     const renderReviews = _deps.renderReviewPanel ?? renderReviewPanel;

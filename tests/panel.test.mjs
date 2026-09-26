@@ -262,6 +262,31 @@ function createTestEnvironment(initialChatState = {}) {
     modeFeedback.hidden = true;
     panel.appendChild(modeFeedback);
 
+    const regexSection = doc.createElement('section');
+    regexSection.id = 'chromatic-dialogue-regex-section';
+
+    const regexDisplayStatus = doc.createElement('span');
+    regexDisplayStatus.id = 'chromatic-dialogue-regex-dialogue-display-status';
+    regexSection.appendChild(regexDisplayStatus);
+
+    const regexHygieneStatus = doc.createElement('span');
+    regexHygieneStatus.id = 'chromatic-dialogue-regex-prompt-hygiene-status';
+    regexSection.appendChild(regexHygieneStatus);
+
+    const regexSummary = doc.createElement('p');
+    regexSummary.id = 'chromatic-dialogue-regex-summary';
+    regexSection.appendChild(regexSummary);
+
+    const regexRepairBtn = doc.createElement('button');
+    regexRepairBtn.id = 'chromatic-dialogue-regex-repair';
+    regexSection.appendChild(regexRepairBtn);
+
+    const regexFeedback = doc.createElement('p');
+    regexFeedback.id = 'chromatic-dialogue-regex-feedback';
+    regexFeedback.hidden = true;
+    regexSection.appendChild(regexFeedback);
+    panel.appendChild(regexSection);
+
     const reviewSection = doc.createElement('section');
     reviewSection.id = REVIEW_SECTION_ID;
     reviewSection.hidden = true;
@@ -1490,4 +1515,290 @@ test('panel source contract: imports controller, does not import mode store or q
     assert.strictEqual(panelSource.includes('"automatic"'), false);
     assert.strictEqual(panelSource.includes("'off'"), false);
     assert.strictEqual(panelSource.includes('"off"'), false);
+});
+
+test('regex integration controller: not called when no panel is mounted', () => {
+    const origDoc = globalThis.document;
+    try {
+        globalThis.document = {
+            getElementById() {
+                return null;
+            },
+        };
+        let regexCalls = 0;
+        refreshPanelState({
+            refreshRegexIntegrationControl: () => {
+                regexCalls++;
+            },
+        });
+        assert.equal(regexCalls, 0);
+    } finally {
+        globalThis.document = origDoc;
+    }
+});
+
+test('regex integration controller: mounted panel calls controller exactly once with the exact panel', () => {
+    const env = createTestEnvironment();
+    env.activate();
+    try {
+        let regexCalls = 0;
+        let receivedPanel = null;
+        refreshPanelState({
+            refreshRegexIntegrationControl: (p) => {
+                regexCalls++;
+                receivedPanel = p;
+            },
+        });
+        assert.equal(regexCalls, 1);
+        assert.strictEqual(receivedPanel, env.panel);
+    } finally {
+        env.cleanup();
+    }
+});
+
+test('regex integration controller: repeated refreshPanelState calls call controller once per refresh', () => {
+    const env = createTestEnvironment();
+    env.activate();
+    try {
+        let regexCalls = 0;
+        const fakeRegex = () => {
+            regexCalls++;
+        };
+        refreshPanelState({ refreshRegexIntegrationControl: fakeRegex });
+        refreshPanelState({ refreshRegexIntegrationControl: fakeRegex });
+        refreshPanelState({ refreshRegexIntegrationControl: fakeRegex });
+        assert.equal(regexCalls, 3);
+    } finally {
+        env.cleanup();
+    }
+});
+
+test('regex integration controller: called independently of active assignment state (no-chat, ready, malformed)', () => {
+    const env = createTestEnvironment();
+    env.activate();
+    try {
+        let calls = [];
+        const fakeRegex = (p) => {
+            calls.push(p);
+        };
+
+        env.setChat(null);
+        refreshPanelState({ refreshRegexIntegrationControl: fakeRegex });
+        assert.equal(calls.length, 1);
+        assert.strictEqual(calls[0], env.panel);
+
+        env.setChat('chat-ready', {
+            chromatic_dialogue: {
+                schemaVersion: 1,
+                assignments: { c1: { name: 'Alice', color: '#56B4E9' } },
+            },
+        });
+        refreshPanelState({ refreshRegexIntegrationControl: fakeRegex });
+        assert.equal(calls.length, 2);
+        assert.strictEqual(calls[1], env.panel);
+
+        env.setChat('chat-malformed', {
+            chromatic_dialogue: { schemaVersion: 999 },
+        });
+        refreshPanelState({ refreshRegexIntegrationControl: fakeRegex });
+        assert.equal(calls.length, 3);
+        assert.strictEqual(calls[2], env.panel);
+    } finally {
+        env.cleanup();
+    }
+});
+
+test('regex integration controller: runs without altering Review renderer call count (exactly once per refresh)', () => {
+    const env = createTestEnvironment();
+    env.activate();
+    try {
+        let regexCalls = 0;
+        let reviewCalls = 0;
+        refreshPanelState({
+            refreshRegexIntegrationControl: () => {
+                regexCalls++;
+            },
+            renderReviewPanel: () => {
+                reviewCalls++;
+            },
+        });
+        assert.equal(regexCalls, 1);
+        assert.equal(reviewCalls, 1);
+
+        refreshPanelState({
+            refreshRegexIntegrationControl: () => {
+                regexCalls++;
+            },
+            renderReviewPanel: () => {
+                reviewCalls++;
+            },
+        });
+        assert.equal(regexCalls, 2);
+        assert.equal(reviewCalls, 2);
+    } finally {
+        env.cleanup();
+    }
+});
+
+test('regex integration controller: integration does not add pending-review subscriptions', async () => {
+    const env = createTestEnvironment();
+    env.activate();
+    let unsub;
+    try {
+        let subscribeCalls = 0;
+        const freshModule = await loadFreshPanelModule();
+        const deps = {
+            subscribePendingReviewChanges: (listener) => {
+                subscribeCalls++;
+                unsub = subscribePendingReviewChanges(listener);
+                return unsub;
+            },
+            refreshRegexIntegrationControl: () => {},
+        };
+        freshModule.refreshPanelState(deps);
+        freshModule.refreshPanelState(deps);
+        freshModule.refreshPanelState(deps);
+        assert.equal(subscribeCalls, 1);
+    } finally {
+        if (unsub) unsub();
+        env.cleanup();
+    }
+});
+
+test('regex integration controller: assignment list and editor behavior remain unchanged', () => {
+    const env = createTestEnvironment({
+        chatId: 'chat-1',
+        chatMetadata: {
+            chromatic_dialogue: {
+                schemaVersion: 1,
+                assignments: {
+                    c1: { name: 'Alice', color: '#56B4E9' },
+                },
+            },
+        },
+    });
+    env.activate();
+    try {
+        let regexCalls = 0;
+        refreshPanelState({
+            refreshRegexIntegrationControl: () => {
+                regexCalls++;
+            },
+        });
+        assert.equal(regexCalls, 1);
+
+        const list = env.panel.querySelector(`#${ASSIGNMENT_LIST_ID}`);
+        assert.strictEqual(list.hidden, false);
+        assert.equal(list.children.length, 1);
+        assert.equal(list.children[0].dataset.assignmentId, 'c1');
+
+        const editBtn = env.panel.querySelector('.chromatic-dialogue-assignment-edit');
+        editBtn.click();
+        assert.equal(env.panel.dataset.assignmentMode, 'edit');
+        const legend = env.panel.querySelector(`#${ASSIGNMENT_FORM_LEGEND_ID}`);
+        assert.equal(legend.textContent, 'Edit assignment c1');
+    } finally {
+        env.cleanup();
+    }
+});
+
+test('regex integration controller: dependency override is honored and production fallback is used when absent', () => {
+    const env = createTestEnvironment({
+        chatId: 'chat-fallback',
+        chatMetadata: {
+            chromatic_dialogue: {
+                schemaVersion: 1,
+                assignments: {},
+            },
+        },
+    });
+    env.activate();
+    try {
+        let overrideCalled = false;
+        let receivedPanel = null;
+        refreshPanelState({
+            refreshRegexIntegrationControl: (p) => {
+                overrideCalled = true;
+                receivedPanel = p;
+            },
+        });
+        assert.strictEqual(overrideCalled, true);
+        assert.strictEqual(receivedPanel, env.panel);
+
+        const summary = env.panel.querySelector('#chromatic-dialogue-regex-summary');
+        assert.equal(summary.textContent, '');
+        refreshPanelState();
+        assert.equal(
+            summary.textContent,
+            'Regex integration is unavailable in this SillyTavern session.',
+        );
+    } finally {
+        env.cleanup();
+    }
+});
+
+test('regex integration controller: regex integration and operation-mode controller both run exactly once in the same refresh', () => {
+    const env = createTestEnvironment();
+    env.activate();
+    try {
+        let modeCalls = 0;
+        let regexCalls = 0;
+        refreshPanelState({
+            refreshOperationModeControl: () => {
+                modeCalls++;
+            },
+            refreshRegexIntegrationControl: () => {
+                regexCalls++;
+            },
+        });
+        assert.equal(modeCalls, 1);
+        assert.equal(regexCalls, 1);
+    } finally {
+        env.cleanup();
+    }
+});
+
+test('panel source contract: imports regex controller, does not import regex core or query regex DOM', () => {
+    const panelSource = fs.readFileSync(
+        new URL('../src/panel.js', import.meta.url),
+        'utf8',
+    );
+
+    assert.match(
+        panelSource,
+        /import\s*\{[^}]*refreshRegexIntegrationControl[^}]*\}\s*from\s*['"]\.\/regex-panel\.js['"]/,
+    );
+
+    assert.strictEqual(panelSource.includes('regex-integration.js'), false);
+    assert.strictEqual(panelSource.includes('regex-definitions.js'), false);
+    assert.strictEqual(panelSource.includes('repairRegexIntegration'), false);
+    assert.strictEqual(panelSource.includes('readRegexIntegrationStatus'), false);
+    assert.strictEqual(panelSource.includes('MANAGED_REGEX_SCRIPTS'), false);
+    assert.strictEqual(panelSource.includes('REGEX_INTEGRATION_STATUS'), false);
+    assert.strictEqual(panelSource.includes('REGEX_SCRIPT_STATUS'), false);
+
+    assert.strictEqual(
+        panelSource.includes('chromatic-dialogue-regex-section'),
+        false,
+    );
+    assert.strictEqual(
+        panelSource.includes('chromatic-dialogue-regex-dialogue-display-status'),
+        false,
+    );
+    assert.strictEqual(
+        panelSource.includes('chromatic-dialogue-regex-prompt-hygiene-status'),
+        false,
+    );
+    assert.strictEqual(
+        panelSource.includes('chromatic-dialogue-regex-summary'),
+        false,
+    );
+    assert.strictEqual(
+        panelSource.includes('chromatic-dialogue-regex-repair'),
+        false,
+    );
+    assert.strictEqual(
+        panelSource.includes('chromatic-dialogue-regex-feedback'),
+        false,
+    );
 });
