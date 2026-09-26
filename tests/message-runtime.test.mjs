@@ -3500,3 +3500,109 @@ test('119. Automatic mode completes full pipeline with auxiliary suffix content'
     const ctx = globalThis.SillyTavern.getContext();
     assert.strictEqual(ctx.chat[0].mes, rawMessage);
 });
+
+test('120. Review mode accepts a new speaker whose only marker is toned', async () => {
+    const rawMessage = [
+        '[c1:whisper]Keep your voice down.[/c]',
+        '',
+        '<!-- CD_NEW {"id":"c1","name":"Alice","color":"#56B4E9"} -->',
+        '',
+        '<div class="auxiliary">',
+        '    <p>Arbitrary non-story content.</p>',
+        '</div>',
+        '',
+        '### Notes',
+        'Additional auxiliary text.',
+    ].join('\n');
+
+    const metadata = {
+        [CHAT_MODE_METADATA_KEY]: OPERATION_MODE_REVIEW,
+        [CHAT_METADATA_KEY]: {
+            schemaVersion: 1,
+            assignments: {},
+        },
+    };
+
+    const { getHandler, context } = setupContextWithChat({
+        chatId: 'chat-1',
+        chat: [{ mes: rawMessage, is_user: false }],
+        chatMetadata: metadata,
+    });
+
+    const { registerMessageReceivedRuntime } = await loadFreshRuntime();
+    registerMessageReceivedRuntime();
+
+    getHandler()(0);
+
+    assert.strictEqual(getPendingReviewCount('chat-1'), 1);
+    const review = getPendingReview('chat-1', 0);
+    assert.ok(review);
+    assert.strictEqual(review.chatId, 'chat-1');
+    assert.strictEqual(review.messageId, 0);
+    assert.strictEqual(review.proposals.length, 1);
+    assert.strictEqual(review.proposals[0].id, 'c1');
+    assert.strictEqual(review.proposals[0].name, 'Alice');
+    assert.deepEqual(metadata[CHAT_METADATA_KEY].assignments, {});
+    assert.strictEqual(context.chat[0].mes, rawMessage);
+});
+
+test('121. Automatic mode completes full pipeline from a toned-only first utterance', async () => {
+    let saveMetadataCalled = false;
+    const rawMessage = [
+        '[c1:tremble]I... I heard something downstairs.[/c]',
+        '',
+        '<!-- CD_NEW {"id":"c1","name":"Alice","color":"#56B4E9"} -->',
+        '',
+        '<div>',
+        '    arbitrary auxiliary state',
+        '</div>',
+        '',
+        '### Notes',
+        'Some additional non-story content.',
+    ].join('\n');
+
+    const metadata = {
+        [CHAT_MODE_METADATA_KEY]: OPERATION_MODE_AUTOMATIC,
+        [CHAT_METADATA_KEY]: {
+            schemaVersion: 1,
+            assignments: {},
+        },
+    };
+
+    let handler = null;
+    globalThis.SillyTavern = {
+        getContext() {
+            return {
+                chatId: 'chat-auto-tone-1',
+                chat: [{ mes: rawMessage, is_user: false }],
+                chatMetadata: metadata,
+                event_types: { MESSAGE_RECEIVED: 'message_received' },
+                eventSource: {
+                    on(event, fn) {
+                        handler = fn;
+                    },
+                },
+                saveMetadata() {
+                    saveMetadataCalled = true;
+                },
+            };
+        },
+    };
+    setupMockDom({ backgroundColor: 'rgb(24, 24, 24)' });
+
+    const { registerMessageReceivedRuntime } = await loadFreshRuntime();
+    registerMessageReceivedRuntime();
+
+    handler(0);
+
+    await waitFor(() => saveMetadataCalled === true && getPendingReviewCount('chat-auto-tone-1') === 0);
+
+    assert.strictEqual(saveMetadataCalled, true);
+    assert.ok(metadata[CHAT_METADATA_KEY].assignments.c1);
+    assert.strictEqual(metadata[CHAT_METADATA_KEY].assignments.c1.name, 'Alice');
+    assert.strictEqual(metadata[CHAT_METADATA_KEY].assignments.c1.color, '#56B4E9');
+    assert.strictEqual(getPendingReviewCount('chat-auto-tone-1'), 0);
+    assert.strictEqual(getPendingReview('chat-auto-tone-1', 0), null);
+    const ctx = globalThis.SillyTavern.getContext();
+    assert.strictEqual(ctx.chat[0].mes, rawMessage);
+});

@@ -1328,3 +1328,34 @@ test('53. unchanged source with auxiliary suffix after registration block procee
     assert.strictEqual(metadata[CHAT_METADATA_KEY].assignments.c1.name, 'Alice');
     assert.strictEqual(context.chat[0].mes, rawMessage);
 });
+
+test('54. manual approval revalidates an unchanged toned-only source', async () => {
+    putPendingReview(createValidReview());
+    const rawMessage = [
+        '[c1:measured]You should sit down before I explain.[/c]',
+        '',
+        '<!-- CD_NEW {"id":"c1","name":"Alice","color":"#56B4E9"} -->',
+        '',
+        '<div>',
+        '    arbitrary auxiliary suffix',
+        '</div>',
+        '',
+        '### Notes',
+        'Additional notes.',
+    ].join('\n');
+    const metadata = {};
+    const context = setupContextWithChat({
+        chatId: 'chat-1',
+        chat: [{ mes: rawMessage, is_user: false }],
+        chatMetadata: metadata,
+    });
+
+    const res = await approvePendingReview('chat-1', 0);
+    assert.strictEqual(res.status, 'approved');
+    assert.strictEqual(res.chatId, 'chat-1');
+    assert.strictEqual(res.messageId, 0);
+    assert.strictEqual(res.pendingRemoved, true);
+    assert.strictEqual(getPendingReview('chat-1', 0), null);
+    assert.strictEqual(metadata[CHAT_METADATA_KEY].assignments.c1.name, 'Alice');
+    assert.strictEqual(context.chat[0].mes, rawMessage);
+});
