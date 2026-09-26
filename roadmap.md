@@ -2,7 +2,7 @@
 
 ## Current state
 
-Chromatic Dialogue `1.0.1` is the current stable release. The `1.0.0` release remains the first stable release, and `1.0.1` adds a focused compatibility fix for presets that append auxiliary/non-story content after Chromatic Dialogue registration records.
+Chromatic Dialogue `1.1.0` is the current stable release. The `1.0.0` release remains the first stable release, `1.0.1` adds auxiliary-tail registration compatibility, and `1.1.0` adds optional per-utterance vocal-delivery tones while preserving the existing assignment schema and character-color model.
 
 The functional architecture through Automatic mode is complete and has been validated by the automated suite and in real SillyTavern roleplay flows, including cross-theme, constrained-width, Review, Automatic, multi-character registration, prompt-hygiene, and auxiliary-tail compatibility testing.
 
@@ -52,8 +52,8 @@ A17 remains deliberately non-feature work:
 The immediate post-1.0 sequence is:
 
 1. **B1 — Auxiliary-tail tolerant registration** — complete in `1.0.1`.
-2. **B2 — Optional dialogue tones** — implementation and automated integration are complete in the current development branch. Tone remains per utterance and does not change assignment identity or persisted schema. Live SillyTavern validation and the `1.1.0` release gate remain before B2 is considered released.
-3. **B3 — Legacy chat migration** — planned after B2 is released. Migration must be explicit, previewed, user-confirmed, and non-automatic.
+2. **B2 — Optional dialogue tones** — complete in `1.1.0`. The closed `whisper` / `shout` / `measured` / `tremble` vocabulary is live-validated in SillyTavern; tone remains per utterance and does not change assignment identity or persisted schema.
+3. **B3 — Legacy chat migration** — next development series. Migration must be explicit, previewed, user-confirmed, and non-automatic.
 
 Other possible future work includes:
 

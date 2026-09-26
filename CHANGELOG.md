@@ -2,6 +2,31 @@
 
 All notable changes to Chromatic Dialogue are documented here.
 
+## [1.1.0] - 2026-09-26
+
+Minor release adding optional per-utterance vocal-delivery tones while preserving the existing character-color and registration architecture.
+
+### Added
+
+- Optional dialogue-tone syntax for the closed `whisper`, `shout`, `measured`, and `tremble` vocabulary.
+- Tone-aware registration validation, so a genuinely new speaker may be introduced with a supported toned marker such as `[c3:whisper]...[/c]` without requiring a separate untoned `[c3]` occurrence.
+- Importable unified dialogue-display Regex asset at `docs/regex-dialogue-display.json`, covering both ordinary `[cN]...[/c]` and supported `[cN:tone]...[/c]` markers.
+- Typography-only tone presentation classes for Whisper, Shout, Measured, and Tremble.
+- Runtime and approval regression coverage proving toned first utterances work through Review, Automatic, and fresh approval/revalidation paths.
+
+### Changed
+
+- The recommended AI prompt now documents tones as optional vocal-delivery modifiers and tells models to leave ordinary speech untoned.
+- The Regex setup guide now documents the unified display asset and the separation between character-color classes and tone-presentation classes.
+
+### Compatibility and safety
+
+- Existing `[cN]...[/c]` dialogue remains fully supported and unchanged.
+- Tone is per utterance only; it is not part of character identity, `CD_NEW`, assignment metadata, or the persisted schema.
+- Unsupported or freeform tone tokens remain raw instead of silently falling back to ordinary dialogue rendering.
+- Tone CSS does not override character color, reduce opacity, or add persistent animation/jitter effects.
+- The `1.0.1` auxiliary-tail compatibility behavior remains unchanged.
+
 ## [1.0.1] - 2026-09-26
 
 Compatibility patch for SillyTavern presets that append auxiliary or non-story content after the visible roleplay response.

@@ -2,7 +2,7 @@
 
 Chromatic Dialogue is a chat-scoped dialogue color and speaker-registration extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern). It uses compact markers such as `[c1]...[/c]`, per-chat character assignments, and SillyTavern's built-in Regex extension to render recurring speakers with consistent colors.
 
-Version `1.0.1` is the current stable release. It keeps the complete `1.0.0` feature set — including automatic contrast correction — and adds compatibility with SillyTavern presets that append auxiliary/non-story content after Chromatic Dialogue registration records.
+Version `1.1.0` is the current stable release. It keeps the complete `1.0.1` feature set — including automatic contrast correction and auxiliary-tail compatibility — and adds optional per-utterance vocal-delivery tones: `whisper`, `shout`, `measured`, and `tremble`. Tone does not change character identity, persisted assignment state, or the existing ordinary `[cN]...[/c]` syntax.
 
 ## Features
 
