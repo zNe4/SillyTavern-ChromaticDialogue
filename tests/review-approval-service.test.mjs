@@ -1297,3 +1297,34 @@ test('52. inspection result with falsy different chatId -> chat-changed', async 
     assert.strictEqual(registerCalled, false);
     assert.notStrictEqual(getPendingReview('chat-1', 0), null);
 });
+
+test('53. unchanged source with auxiliary suffix after registration block proceeds to approval', async () => {
+    putPendingReview(createValidReview());
+    const rawMessage = [
+        '[c1]Hello.[/c]',
+        '',
+        '<!-- CD_NEW {"id":"c1","name":"Alice","color":"#56B4E9"} -->',
+        '',
+        '<div>',
+        '    arbitrary auxiliary material',
+        '</div>',
+        '',
+        '### Notes',
+        'Additional text.',
+    ].join('\n');
+    const metadata = {};
+    const context = setupContextWithChat({
+        chatId: 'chat-1',
+        chat: [{ mes: rawMessage, is_user: false }],
+        chatMetadata: metadata,
+    });
+
+    const res = await approvePendingReview('chat-1', 0);
+    assert.strictEqual(res.status, 'approved');
+    assert.strictEqual(res.chatId, 'chat-1');
+    assert.strictEqual(res.messageId, 0);
+    assert.strictEqual(res.pendingRemoved, true);
+    assert.strictEqual(getPendingReview('chat-1', 0), null);
+    assert.strictEqual(metadata[CHAT_METADATA_KEY].assignments.c1.name, 'Alice');
+    assert.strictEqual(context.chat[0].mes, rawMessage);
+});

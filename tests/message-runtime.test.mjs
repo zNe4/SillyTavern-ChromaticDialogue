@@ -3392,3 +3392,111 @@ test('117. Competing automatic proposals (first-success-wins, competing remains 
     assert.ok(competingReview);
     assert.strictEqual(competingReview.proposals[0].name, 'Bob');
 });
+
+test('118. Review mode accepts auxiliary content after registration block', async () => {
+    const rawMessage = [
+        '[c1]Hello.[/c]',
+        '',
+        '<!-- CD_NEW {"id":"c1","name":"Alice","color":"#56B4E9"} -->',
+        '',
+        '<div class="arbitrary">',
+        '    <div>Some auxiliary data.</div>',
+        '</div>',
+        '',
+        '### Notes',
+        '',
+        'Anything can follow.',
+    ].join('\n');
+
+    const metadata = {
+        [CHAT_MODE_METADATA_KEY]: OPERATION_MODE_REVIEW,
+        [CHAT_METADATA_KEY]: {
+            schemaVersion: 1,
+            assignments: {},
+        },
+    };
+
+    const { getHandler, context } = setupContextWithChat({
+        chatId: 'chat-1',
+        chat: [{ mes: rawMessage, is_user: false }],
+        chatMetadata: metadata,
+    });
+
+    const { registerMessageReceivedRuntime } = await loadFreshRuntime();
+    registerMessageReceivedRuntime();
+
+    getHandler()(0);
+
+    assert.strictEqual(getPendingReviewCount('chat-1'), 1);
+    const review = getPendingReview('chat-1', 0);
+    assert.ok(review);
+    assert.strictEqual(review.chatId, 'chat-1');
+    assert.strictEqual(review.messageId, 0);
+    assert.strictEqual(review.proposals.length, 1);
+    assert.strictEqual(review.proposals[0].id, 'c1');
+    assert.strictEqual(review.proposals[0].name, 'Alice');
+    assert.strictEqual(context.chat[0].mes, rawMessage);
+    assert.deepEqual(metadata[CHAT_METADATA_KEY].assignments, {});
+});
+
+test('119. Automatic mode completes full pipeline with auxiliary suffix content', async () => {
+    let saveMetadataCalled = false;
+    const rawMessage = [
+        '[c1]Hello from Alice with trailing auxiliary content.[/c]',
+        '',
+        '<!-- CD_NEW {"id":"c1","name":"Alice","color":"#56B4E9"} -->',
+        '',
+        '<div class="auxiliary-container">',
+        '    <section><span>Opaque block content</span></section>',
+        '</div>',
+        '',
+        '### Auxiliary Notes',
+        '',
+        'Arbitrary trailing markdown and plain text follows here.',
+    ].join('\n');
+
+    const metadata = {
+        [CHAT_MODE_METADATA_KEY]: OPERATION_MODE_AUTOMATIC,
+        [CHAT_METADATA_KEY]: {
+            schemaVersion: 1,
+            assignments: {},
+        },
+    };
+
+    let handler = null;
+    globalThis.SillyTavern = {
+        getContext() {
+            return {
+                chatId: 'chat-auto-aux-1',
+                chat: [{ mes: rawMessage, is_user: false }],
+                chatMetadata: metadata,
+                event_types: { MESSAGE_RECEIVED: 'message_received' },
+                eventSource: {
+                    on(event, fn) {
+                        handler = fn;
+                    },
+                },
+                saveMetadata() {
+                    saveMetadataCalled = true;
+                },
+            };
+        },
+    };
+    setupMockDom({ backgroundColor: 'rgb(24, 24, 24)' });
+
+    const { registerMessageReceivedRuntime } = await loadFreshRuntime();
+    registerMessageReceivedRuntime();
+
+    handler(0);
+
+    await waitFor(() => saveMetadataCalled === true && getPendingReviewCount('chat-auto-aux-1') === 0);
+
+    assert.strictEqual(saveMetadataCalled, true);
+    assert.ok(metadata[CHAT_METADATA_KEY].assignments.c1);
+    assert.strictEqual(metadata[CHAT_METADATA_KEY].assignments.c1.name, 'Alice');
+    assert.strictEqual(metadata[CHAT_METADATA_KEY].assignments.c1.color, '#56B4E9');
+    assert.strictEqual(getPendingReviewCount('chat-auto-aux-1'), 0);
+    assert.strictEqual(getPendingReview('chat-auto-aux-1', 0), null);
+    const ctx = globalThis.SillyTavern.getContext();
+    assert.strictEqual(ctx.chat[0].mes, rawMessage);
+});
