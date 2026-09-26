@@ -77,6 +77,91 @@
                 ></p>
             </section>
 
+            <section
+                id="chromatic-dialogue-regex-section"
+                class="chromatic-dialogue-regex-section"
+                aria-labelledby="chromatic-dialogue-regex-heading"
+            >
+                <h3
+                    id="chromatic-dialogue-regex-heading"
+                    class="chromatic-dialogue-regex-title"
+                >
+                    Regex integration
+                </h3>
+
+                <p class="chromatic-dialogue-regex-description">
+                    Chromatic Dialogue uses two global SillyTavern Regex scripts for dialogue rendering and prompt hygiene.
+                </p>
+
+                <div
+                    id="chromatic-dialogue-regex-status-list"
+                    class="chromatic-dialogue-regex-status-list"
+                    role="list"
+                    aria-label="Required Regex scripts"
+                >
+                    <div
+                        class="chromatic-dialogue-regex-status-row"
+                        role="listitem"
+                    >
+                        <span class="chromatic-dialogue-regex-status-label">
+                            Dialogue display
+                        </span>
+                        <span
+                            id="chromatic-dialogue-regex-dialogue-display-status"
+                            class="chromatic-dialogue-regex-status-value"
+                            data-regex-status="unavailable"
+                        >
+                            Checking…
+                        </span>
+                    </div>
+
+                    <div
+                        class="chromatic-dialogue-regex-status-row"
+                        role="listitem"
+                    >
+                        <span class="chromatic-dialogue-regex-status-label">
+                            Prompt hygiene
+                        </span>
+                        <span
+                            id="chromatic-dialogue-regex-prompt-hygiene-status"
+                            class="chromatic-dialogue-regex-status-value"
+                            data-regex-status="unavailable"
+                        >
+                            Checking…
+                        </span>
+                    </div>
+                </div>
+
+                <p
+                    id="chromatic-dialogue-regex-summary"
+                    class="chromatic-dialogue-regex-summary"
+                    role="status"
+                    aria-live="polite"
+                >
+                    Checking required Regex scripts…
+                </p>
+
+                <div class="chromatic-dialogue-regex-actions">
+                    <button
+                        id="chromatic-dialogue-regex-repair"
+                        class="menu_button chromatic-dialogue-regex-repair"
+                        type="button"
+                        aria-describedby="chromatic-dialogue-regex-summary chromatic-dialogue-regex-feedback"
+                        disabled
+                    >
+                        Check Regex
+                    </button>
+                </div>
+
+                <p
+                    id="chromatic-dialogue-regex-feedback"
+                    class="chromatic-dialogue-feedback chromatic-dialogue-regex-feedback"
+                    role="status"
+                    aria-live="polite"
+                    hidden
+                ></p>
+            </section>
+
             <div
                 id="chromatic-dialogue-no-chat"
                 class="chromatic-dialogue-state"
