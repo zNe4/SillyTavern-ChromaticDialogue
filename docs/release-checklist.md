@@ -1,6 +1,6 @@
-# 0.1.0 release checklist
+# 1.0.0 release checklist
 
-This checklist is for the final Chromatic Dialogue `0.1.0` candidate. It is intentionally conservative: release hardening should not add new runtime architecture.
+This checklist is for the first stable Chromatic Dialogue `1.0.0` release. It is intentionally conservative: release finalization should not add new runtime architecture.
 
 ## Source and metadata
 
@@ -30,11 +30,11 @@ This checklist is for the final Chromatic Dialogue `0.1.0` candidate. It is inte
 - [ ] Release screenshots match the current Review/Automatic UI and responsive layouts.
 - [ ] `docs/regex-setup.md` documents both display and prompt-hygiene Regex responsibilities.
 - [ ] All local Markdown links resolve to existing files.
-- [ ] CHANGELOG describes the release candidate without claiming a release date/tag that has not been created.
+- [ ] CHANGELOG identifies `1.0.0` as the first stable release and uses the intended release date.
 
 ## Real SillyTavern smoke test
 
-Use a disposable chat and current installation of the release candidate.
+Use a disposable chat and the current `1.0.0` release build.
 
 - [ ] Open the extension panel; no new attributable console errors.
 - [ ] Manual Add/Edit/Delete works and colors update immediately.
@@ -68,6 +68,6 @@ Use a disposable chat and current installation of the release candidate.
 After every item above passes:
 
 - [ ] Record final automated test count and smoke-test environment in the release notes.
-- [ ] Create the `v0.1.0` tag/release only after the candidate is final.
-- [ ] Replace `Release candidate` in CHANGELOG with the real release date in the same release commit/tag if desired.
-- [ ] Do not claim a published release in README/CHANGELOG before the release actually exists.
+- [ ] Create and verify annotated tag `v1.0.0` only after the release build is final.
+- [ ] Push the tag and create a matching GitHub Release.
+- [ ] Generate the distributable archive from the tagged/committed tree with the external archive helper, not from an in-repository script.

@@ -2,9 +2,9 @@
 
 All notable changes to Chromatic Dialogue are documented here.
 
-The project is preparing its first public release. Until a release/tag is actually cut, the `0.1.0` section below describes the current release candidate rather than claiming a published release date.
+## [1.0.0] - 2026-09-26
 
-## [0.1.0] - Release candidate
+First stable public release. This release promotes the complete, live-validated A0–A17 feature set that was developed on `main` during the pre-release cycle.
 
 ### Added
 

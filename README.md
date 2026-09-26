@@ -2,7 +2,7 @@
 
 Chromatic Dialogue is a chat-scoped dialogue color and speaker-registration extension for [SillyTavern](https://github.com/SillyTavern/SillyTavern). It uses compact markers such as `[c1]...[/c]`, per-chat character assignments, and SillyTavern's built-in Regex extension to render recurring speakers with consistent colors.
 
-Version `0.1.0` is the first public release candidate. The current implementation supports manual assignments, AI-proposed new speakers, Review and Automatic registration workflows, automatic contrast correction, and prompt-hygiene cleanup for internal `CD_NEW` registration records.
+Version `1.0.0` is the first stable public release. It includes manual assignments, AI-proposed new speakers, Review and Automatic registration workflows, automatic contrast correction, responsive cross-theme UI hardening, and prompt-hygiene cleanup for internal `CD_NEW` registration records.
 
 ## Features
 
@@ -351,8 +351,6 @@ The test suite covers normalization, registry queries and macros, parser/validat
 │   ├── regex-control-records.json
 │   ├── regex-setup.md
 │   └── release-checklist.md
-├── scripts/
-│   └── archive-project.sh
 ├── src/
 │   ├── automatic-review-controller.js
 │   ├── chat-store.js

@@ -159,7 +159,7 @@ its closing `[/c]` arrives. A complete valid marker then transforms normally.
 The replacement supplies fixed curly quotation marks. SillyTavern may render
 recognized quotation marks as a nested `<q>` element. Chromatic Dialogue's
 generated rules color both the marker span and nested `<q>` elements, so the
-selected color remains visible across the verified themes. Version `0.1.0`
+selected color remains visible across the verified themes. Version `1.0.0
 does not provide configurable quote glyphs.
 
 ---

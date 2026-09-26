@@ -1,5 +1,6 @@
 # Chromatic Dialogue — Project Roadmap
 
+> **Historical document.** This file preserves pre-release planning and acceptance notes. Any references below to an in-repository archive helper describe a retired workflow. From the first stable release onward, project snapshots are created by an external Bash helper kept outside the repository.
 > Living source of truth for the design, implementation, testing, and release of
 > the Chromatic Dialogue SillyTavern UI extension.
 
@@ -156,8 +157,6 @@ SillyTavern-ChromaticDialogue/
 │   └── *.test.mjs
 ├── docs/
 │   └── regex-setup.md
-├── scripts/
-│   └── archive-project.sh
 ├── README.md
 ├── LICENSE
 └── .gitignore
@@ -183,7 +182,7 @@ SillyTavern-ChromaticDialogue/
 | `src/panel.js` | UI rendering, form handling, and user feedback |
 | `tests/*.test.mjs` | Domain, storage, and lifecycle regression coverage |
 | `docs/regex-setup.md` | Exact built-in Regex configuration |
-| `scripts/archive-project.sh` | Create clean project snapshots for review |
+| External archive helper | Create clean project snapshots for review without shipping tooling inside the extension |
 | `README.md` | Installation, usage, limitations, and troubleshooting |
 
 No `node_modules`, compiled bundle, generated assets, or SillyTavern source files
@@ -194,8 +193,8 @@ should be committed.
 Run:
 
 ```bash
-chmod +x scripts/archive-project.sh
-./scripts/archive-project.sh
+chmod +x ../archive-chromatic-dialogue.sh
+../archive-chromatic-dialogue.sh --project .
 ```
 
 The script archives Git-tracked files plus untracked files that are not ignored
@@ -218,9 +217,9 @@ archive outside the repository prevents it from including itself.
 Useful options:
 
 ```bash
-./scripts/archive-project.sh --list
-./scripts/archive-project.sh --tracked-only
-./scripts/archive-project.sh --output ../chromatic-dialogue-review.zip
+../archive-chromatic-dialogue.sh --project . --list
+../archive-chromatic-dialogue.sh --project . --tracked-only
+../archive-chromatic-dialogue.sh --project . --output ../chromatic-dialogue-review.zip
 ```
 
 The script requires `git` and `zip`. If `unzip` is installed, it also verifies
@@ -651,7 +650,7 @@ Tasks:
 - [x] Create valid `manifest.json`.
 - [x] Create `index.js`, `settings.html`, and `style.css`.
 - [x] Add `global.d.ts` for Neovim LSP support.
-- [x] Add and validate `scripts/archive-project.sh`.
+- [x] Add and validate the original archive workflow (later moved outside the repository for the stable release).
 - [x] Register an idempotent initialization path.
 - [x] Render an empty Chromatic Dialogue settings panel.
 - [x] Show no-chat and no-assignment states.
@@ -1132,7 +1131,7 @@ Recommended lightweight workflow:
 - Use tags for public versions.
 - Do not commit SillyTavern itself into the extension repository.
 - Do not commit user data, chats, character cards, settings, secrets, or logs.
-- Create a clean ZIP snapshot with `scripts/archive-project.sh` whenever the
+- Create clean ZIP snapshots with the external archive helper whenever the
   current project state needs to be uploaded for review.
 
 Suggested commit sequence:

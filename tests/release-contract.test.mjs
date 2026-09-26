@@ -37,11 +37,11 @@ function releaseFacingMarkdownFiles() {
     ];
 }
 
-test('release contract: package and manifest versions match', () => {
+test('release contract: package and manifest versions match stable release', () => {
     const pkg = parseJson('package.json');
     const manifest = parseJson('manifest.json');
     assert.equal(pkg.version, manifest.version);
-    assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
+    assert.equal(pkg.version, '1.0.0');
 });
 
 test('release contract: manifest entry files exist', () => {
@@ -184,7 +184,8 @@ test('release contract: README references current workflow and responsive screen
 test('release contract: changelog describes current AI/Automatic feature set', () => {
     const changelog = read('CHANGELOG.md');
     for (const required of [
-        'Release candidate',
+        '[1.0.0] - 2026-09-26',
+        'first stable public release',
         'Automatic',
         'CD_NEW',
         'contrast',
@@ -195,9 +196,10 @@ test('release contract: changelog describes current AI/Automatic feature set', (
     }
 });
 
-test('release contract: roadmap identifies release hardening as current scope', () => {
+test('release contract: roadmap identifies 1.0.0 stable release scope', () => {
     const roadmap = read('roadmap.md');
-    assert.ok(roadmap.includes('release hardening'));
+    assert.ok(roadmap.includes('1.0.0'));
+    assert.ok(roadmap.includes('first stable release'));
     assert.ok(roadmap.includes('unresolved Review cards'));
     assert.ok(roadmap.includes('docs/development-history.md'));
 });
@@ -234,6 +236,12 @@ test('release contract: all JavaScript and MJS files pass node --check', () => {
             execFileSync(process.execPath, ['--check', file], { stdio: 'pipe' });
         }, path.relative(PROJECT_ROOT, file));
     }
+});
+
+test('release contract: archive tooling is not shipped inside the extension repository', () => {
+    assert.equal(fs.existsSync(path.join(PROJECT_ROOT, 'scripts')), false);
+    const readme = read('README.md');
+    assert.equal(readme.includes('scripts/archive-project.sh'), false);
 });
 
 test('release contract: project tree contains no packaged archives or dependency directories', () => {

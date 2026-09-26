@@ -2,7 +2,7 @@
 
 ## Current state
 
-Chromatic Dialogue `0.1.0` is in release hardening. The functional architecture through Automatic mode is complete and has been validated both by the automated suite and in real SillyTavern roleplay flows.
+Chromatic Dialogue `1.0.0` is the first stable release line. The functional architecture through Automatic mode is complete and has been validated by the automated suite and in real SillyTavern roleplay flows, including cross-theme and constrained-width testing.
 
 Completed functional phases:
 
@@ -22,11 +22,11 @@ Completed functional phases:
 
 The historical development plan and acceptance notes that led to this architecture are preserved in [docs/development-history.md](docs/development-history.md).
 
-## Release-hardening phase
+## 1.0.0 release finalization
 
-The `0.1.0` release candidate is considered ready only when all items in [docs/release-checklist.md](docs/release-checklist.md) pass.
+The `1.0.0` release build is considered publishable only when all items in [docs/release-checklist.md](docs/release-checklist.md) pass.
 
-A17 scope is deliberately non-feature work:
+A17 remains deliberately non-feature work:
 
 1. Keep README, prompt, Regex, and changelog documentation aligned with the shipped behavior.
 2. Keep package/manifest version metadata aligned.
@@ -34,7 +34,7 @@ A17 scope is deliberately non-feature work:
 4. Run the full automated suite and syntax/JSON checks from a clean candidate archive.
 5. Perform one final real SillyTavern smoke test of Off, Review, Automatic, manual CRUD, chat switching, and prompt hygiene.
 
-## Deliberately not planned for 0.1.0
+## Deliberately not planned for 1.0.0
 
 - Persistence/reconstruction of unresolved Review cards. Only committed characters should become durable state.
 - Global or inherited character/color defaults across chats.
@@ -43,7 +43,7 @@ A17 scope is deliberately non-feature work:
 - Dedicated group-chat semantics beyond the existing chat-scoped registry behavior.
 - A second thought/tone formatting grammar. The supported AI protocol intentionally stays focused on speaker identity and spoken dialogue.
 
-## Possible post-0.1.0 work
+## Possible post-1.0.0 work
 
 Future work should be driven by real usage rather than added pre-release complexity. Candidates include:
 
