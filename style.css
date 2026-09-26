@@ -522,3 +522,57 @@
         flex-direction: column;
     }
 }
+
+/* ==========================================================================
+   Dialogue tone presentation
+   ========================================================================== */
+
+#chat .mes_text .custom-cd-tone-whisper {
+    font-size: 0.88em;
+    font-style: italic;
+    letter-spacing: 0.01em;
+}
+
+#chat .mes_text .custom-cd-tone-whisper q {
+    font-size: inherit;
+    font-style: inherit;
+    letter-spacing: inherit;
+}
+
+#chat .mes_text .custom-cd-tone-shout {
+    font-size: 1.12em;
+    font-weight: 800;
+    letter-spacing: 0.025em;
+    text-shadow: 0 0 0.28em currentColor;
+}
+
+#chat .mes_text .custom-cd-tone-shout q {
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-shadow: inherit;
+}
+
+#chat .mes_text .custom-cd-tone-measured {
+    font-weight: 650;
+    letter-spacing: 0.055em;
+    word-spacing: 0.04em;
+}
+
+#chat .mes_text .custom-cd-tone-measured q {
+    font-weight: inherit;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+}
+
+#chat .mes_text .custom-cd-tone-tremble {
+    font-style: italic;
+    letter-spacing: 0.08em;
+    word-spacing: 0.035em;
+}
+
+#chat .mes_text .custom-cd-tone-tremble q {
+    font-style: inherit;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+}
