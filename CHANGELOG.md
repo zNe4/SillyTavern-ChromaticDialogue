@@ -1,47 +1,61 @@
 # Changelog
 
-This file records user-visible changes to Chromatic Dialogue. Internal test
-diaries and unreleased design proposals are intentionally omitted.
+All notable changes to Chromatic Dialogue are documented here.
 
-## 0.1.0
+The project is preparing its first public release. Until a release/tag is actually cut, the `0.1.0` section below describes the current release candidate rather than claiming a published release date.
 
-First public MVP release.
+## [0.1.0] - Release candidate
 
 ### Added
 
-- Chat-scoped `c1` through `c99` dialogue color assignments stored in
-  SillyTavern chat metadata under schema version 1.
-- Responsive Extensions-panel controls for adding, editing, deleting, and
-  reusing assignments.
-- Canonical lowercase assignment IDs, trimmed Unicode names, and normalized
-  six-digit hexadecimal colors.
-- Immediate, deterministic CSS generation for Regex marker spans and nested
-  quote elements.
-- Active-chat synchronization, reload reconstruction, guarded persistence,
-  delete confirmation, and accessible in-panel status messages.
-- Direct GitHub installation, local-development, usage, Regex setup,
-  troubleshooting, and compatibility documentation.
+- Per-chat dialogue assignments for canonical IDs `c1` through `c99`.
+- Manual Add, Edit, Delete, and ID reuse from the SillyTavern Extensions panel.
+- Generated per-chat CSS targeting rendered `custom-cd-cN` dialogue classes.
+- Prompt macros:
+  - `{{cdCount}}`
+  - `{{cdNext}}`
+  - `{{cdRoster}}`
+  - `{{cdState}}`
+- AI registration protocol using trailing one-line `<!-- CD_NEW {...} -->` records.
+- Safe parser and state-aware proposal validator with duplicate, capacity, existing-ID/name, marker-use, and first-free-ID checks.
+- Automatic WCAG-style color contrast correction for AI-proposed colors against the live chat background.
+- Memory-only pending Review store with reactive UI notifications.
+- Snapshot-safe Review approval and dismissal flows.
+- Atomic approval for multiple new characters proposed by one assistant message.
+- Native SillyTavern Regex prompt-hygiene configuration that strips historical `CD_NEW` control records from outgoing prompts without rewriting stored messages.
+- Per-chat operation modes:
+  - **Off**
+  - **Review** (default)
+  - **Automatic**
+- Serialized Automatic approval controller that stores a normal pending review first and then reuses the same safe Review approval/persistence path.
+- First-success-wins handling for competing proposals and already-applied reconciliation for equivalent duplicates.
+- Strict-write metadata hardening with rollback on persistence failure and tolerant read behavior for older/malformed stored data.
+- Responsive/accessible Review and mode controls.
+- Cross-theme runtime background resolution for opaque and semi-transparent SillyTavern theme surfaces, including theme-tint fallback and modern CSS color parsing.
+- Release screenshots covering Review progression, committed assignments, final RP rendering, and narrow light/dark layouts.
+- Comprehensive automated coverage for registry, macros, parsing, validation, contrast, persistence, Review, Automatic queue/races, panel integration, Regex prompt hygiene, and release contracts.
 
-### Compatibility and behavior
+### Changed
 
-- Supports SillyTavern `1.18.0+` and requires its built-in Regex extension for
-  display transformation.
-- Uses recommended Regex depth `0` through `50`; Unlimited formats the entire
-  visible transcript.
-- Keeps compact markers in stored messages and leaves outgoing prompts
-  unchanged.
-- Performs no polling, message scanning, message rewriting, streaming
-  interception, runtime dependency loading, or build step.
+- Chromatic Dialogue is no longer assignment-only: AI-managed registration is a supported workflow.
+- Internal `CD_NEW` comments remain in stored raw messages but are removed from later outgoing LLM prompts when the supplied prompt-hygiene Regex is enabled.
+- AI-proposed colors are treated as proposals; the committed value may be adjusted to meet the minimum contrast ratio.
+- Operation mode is stored independently from assignment registry metadata so a chat can still be switched Off even if assignment metadata is malformed.
+- Documentation now recommends a compact `[cN]...[/c]` + `CD_NEW` prompt protocol instead of HTML `<font>` or named-color/tone grammars.
+- Prompt-manager guidance now documents per-generation `{{cdState}}` evaluation and the live-tested Nemo Engine variable/switch pattern.
+- Review and committed-assignment rows now use responsive two-row layouts at constrained widths so long contrast metadata cannot crush character names.
 
-### Known limitations
+### Safety and lifecycle guarantees
 
-- Marker syntax is lowercase and does not support nesting.
-- The supplied Regex uses fixed curly quotation marks.
-- Missing or disabled Regex displays raw markers without breaking assignment
-  storage.
-- Character/global defaults, AI proposals, import/export, palette and contrast
-  tools, toolbar shortcuts, localization, and special group semantics are not
-  included.
-- Chromium desktop remains unverified because it was unavailable during the
-  MVP acceptance campaign; Firefox desktop/responsive layouts and physical
-  Android were verified.
+- Chromatic Dialogue does not rewrite raw assistant messages.
+- Pending Review cards do not reserve assignment IDs.
+- Pending Review cards are intentionally session-only and are not reconstructed after reload/restart.
+- Only successful committed assignments become durable chat metadata.
+- Automatic mode never bypasses the approval/registration service; unsafe or stale work is not forced.
+- Conflicting proposals cannot overwrite a previously committed assignment through the Automatic queue.
+- Mode changes affect future received messages; queued Automatic jobs re-check current mode/chat before beginning approval.
+
+### Setup
+
+- Requires the display Regex described in `docs/regex-setup.md`.
+- AI workflows also require the prompt-hygiene Regex (`docs/regex-control-records.json`) and the recommended AI prompt (`docs/ai-prompt.md`).

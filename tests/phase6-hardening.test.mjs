@@ -157,7 +157,7 @@ test('static panel markup exposes labeled, keyboard-reachable controls', () => {
     );
     assert.match(
         styles,
-        /\.chromatic-dialogue-assignment-name \{[\s\S]*?min-width: 0;[\s\S]*?overflow-wrap: anywhere;/,
+        /\.chromatic-dialogue-assignment-name \{[\s\S]*?min-width: 0;[\s\S]*?overflow-wrap: break-word;[\s\S]*?word-break: normal;/,
     );
     assert.match(
         styles,

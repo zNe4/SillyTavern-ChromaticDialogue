@@ -4,17 +4,26 @@ import {
     CHAT_METADATA_KEY,
     GENERATED_STYLE_ID,
 } from '../src/constants.js';
+import {
+    getPendingReview,
+    clearAllPendingReviews,
+} from '../src/pending-review-store.js';
 
 test('registers once and synchronizes repeated active-chat changes', async (t) => {
+    clearAllPendingReviews();
+
     const eventTypes = {
         APP_INITIALIZED: 'app_initialized',
         CHAT_CHANGED: 'chat_changed',
+        MESSAGE_RECEIVED: 'message_received',
     };
 
     const handlers = new Map();
 
     let activeChatId = null;
     let activeChatMetadata = {};
+    let activeChat = [];
+    let saveMetadataCalled = false;
     let panel = null;
     let templateRenderCount = 0;
     let panelInsertCount = 0;
@@ -103,8 +112,11 @@ test('registers once and synchronizes repeated active-chat changes', async (t) =
 
     const originalDocument = globalThis.document;
     const originalSillyTavern = globalThis.SillyTavern;
+    const originalGetComputedStyle = globalThis.getComputedStyle;
 
     t.after(() => {
+        clearAllPendingReviews();
+
         if (originalDocument === undefined) {
             delete globalThis.document;
         } else {
@@ -115,6 +127,12 @@ test('registers once and synchronizes repeated active-chat changes', async (t) =
             delete globalThis.SillyTavern;
         } else {
             globalThis.SillyTavern = originalSillyTavern;
+        }
+
+        if (originalGetComputedStyle === undefined) {
+            delete globalThis.getComputedStyle;
+        } else {
+            globalThis.getComputedStyle = originalGetComputedStyle;
         }
     });
 
@@ -172,6 +190,14 @@ test('registers once and synchronizes repeated active-chat changes', async (t) =
         get chatMetadata() {
             return activeChatMetadata;
         },
+        get chat() {
+            return activeChat;
+        },
+
+        saveMetadata() {
+            saveMetadataCalled = true;
+            assert.fail('saveMetadata must not be called during message inspection');
+        },
 
         async renderExtensionTemplateAsync(folder, template) {
             assert.equal(
@@ -201,6 +227,12 @@ test('registers once and synchronizes repeated active-chat changes', async (t) =
     const { onActivate } = await import(moduleUrl);
 
     onActivate();
+
+    assert.equal(
+        handlers.get(eventTypes.MESSAGE_RECEIVED)?.length,
+        1,
+    );
+
     onActivate();
 
     const appInitializedHandlers =
@@ -209,8 +241,15 @@ test('registers once and synchronizes repeated active-chat changes', async (t) =
     const chatChangedHandlers =
         handlers.get(eventTypes.CHAT_CHANGED) ?? [];
 
+    const messageReceivedHandlers =
+        handlers.get(eventTypes.MESSAGE_RECEIVED) ?? [];
+
     assert.equal(appInitializedHandlers.length, 1);
     assert.equal(chatChangedHandlers.length, 1);
+    assert.equal(messageReceivedHandlers.length, 1);
+
+    assert.equal(typeof globalThis.getComputedStyle, 'undefined');
+    assert.equal(typeof globalThis.document.querySelector, 'undefined');
 
     activeChatId = 'Example chat';
     activeChatMetadata = {
@@ -435,4 +474,64 @@ test('registers once and synchronizes repeated active-chat changes', async (t) =
     assert.deepEqual(assignmentList.children, []);
     assert.equal(assignmentFormFieldset.disabled, true);
     assert.equal(generatedStyle.textContent, '');
+
+    const rawMessage =
+        '[c1]Hello.[/c]\n<!-- CD_NEW {"id":"c1","name":"Alice","color":"#56B4E9"} -->';
+
+    activeChatId = 'runtime-chat';
+    activeChatMetadata = {};
+    activeChat = [
+        {
+            mes: rawMessage,
+            is_user: false,
+        },
+    ];
+
+    let querySelectorCalls = 0;
+    let getComputedStyleCalls = 0;
+
+    const mesText = {
+        parentElement: null,
+        style: { backgroundColor: 'rgb(24, 24, 24)' },
+    };
+
+    globalThis.document.querySelector = (selector) => {
+        querySelectorCalls += 1;
+        if (selector === '#chat .mes_text' || selector === '#chat') {
+            return mesText;
+        }
+        return null;
+    };
+
+    globalThis.getComputedStyle = (element) => {
+        getComputedStyleCalls += 1;
+        return {
+            backgroundColor:
+                element?.style?.backgroundColor || 'rgba(0, 0, 0, 0)',
+        };
+    };
+
+    messageReceivedHandlers[0](0);
+
+    assert.ok(querySelectorCalls > 0);
+    assert.ok(getComputedStyleCalls > 0);
+
+    delete globalThis.document.querySelector;
+    delete globalThis.getComputedStyle;
+
+    const pendingReview = getPendingReview('runtime-chat', 0);
+    assert.ok(pendingReview);
+    assert.equal(pendingReview.chatId, 'runtime-chat');
+    assert.equal(pendingReview.messageId, 0);
+    assert.equal(pendingReview.proposals.length, 1);
+    assert.equal(pendingReview.proposals[0].id, 'c1');
+    assert.equal(pendingReview.proposals[0].name, 'Alice');
+
+    assert.equal(activeChatMetadata[CHAT_METADATA_KEY], undefined);
+    assert.equal(activeChatMetadata.chromatic_dialogue, undefined);
+    assert.deepEqual(activeChatMetadata, {});
+    assert.equal(saveMetadataCalled, false);
+
+    assert.equal(activeChat[0].mes, rawMessage);
+    assert.ok(activeChat[0].mes.includes('<!-- CD_NEW'));
 });

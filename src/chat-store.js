@@ -79,7 +79,7 @@ export async function saveActiveChatState(expectedChatId, candidate) {
 
     const context = SillyTavern.getContext();
 
-    if (!hasActiveChatId(context.chatId)) {
+    if (!context || !hasActiveChatId(context.chatId)) {
         return {
             status: 'no-chat',
             chatId: null,
@@ -94,11 +94,30 @@ export async function saveActiveChatState(expectedChatId, candidate) {
     }
 
     const chatMetadata = context.chatMetadata;
+
+    if (
+        !chatMetadata ||
+        typeof chatMetadata !== 'object' ||
+        Array.isArray(chatMetadata)
+    ) {
+        return {
+            status: 'invalid-state',
+            chatId: expectedChatId,
+        };
+    }
+
     const hadPreviousState = Object.prototype.hasOwnProperty.call(
         chatMetadata,
         CHAT_METADATA_KEY,
     );
     const previousState = chatMetadata[CHAT_METADATA_KEY];
+
+    if (hadPreviousState && !normalizeStateForWrite(previousState)) {
+        return {
+            status: 'invalid-state',
+            chatId: expectedChatId,
+        };
+    }
 
     chatMetadata[CHAT_METADATA_KEY] = state;
 
@@ -116,12 +135,12 @@ export async function saveActiveChatState(expectedChatId, candidate) {
         throw error;
     }
 
-    const currentChatId = SillyTavern.getContext().chatId;
+    const currentChatId = SillyTavern.getContext()?.chatId;
 
     if (currentChatId !== expectedChatId) {
         return {
             status: 'chat-changed',
-	    chatId: hasActiveChatId(currentChatId)
+            chatId: hasActiveChatId(currentChatId)
                 ? currentChatId
                 : null,
         };

@@ -26,6 +26,57 @@
                 Manage dialogue color assignments for the active chat.
             </p>
 
+            <section
+                id="chromatic-dialogue-operation-mode-section"
+                class="chromatic-dialogue-mode-section"
+                aria-labelledby="chromatic-dialogue-operation-mode-heading"
+            >
+                <h3
+                    id="chromatic-dialogue-operation-mode-heading"
+                    class="chromatic-dialogue-mode-title"
+                >
+                    Operation mode
+                </h3>
+
+                <div class="chromatic-dialogue-mode-control">
+                    <label
+                        for="chromatic-dialogue-operation-mode"
+                        class="chromatic-dialogue-mode-label"
+                    >
+                        New character handling
+                    </label>
+                    <select
+                        id="chromatic-dialogue-operation-mode"
+                        class="text_pole chromatic-dialogue-mode-select"
+                        aria-describedby="chromatic-dialogue-operation-mode-help chromatic-dialogue-operation-mode-feedback"
+                        disabled
+                    >
+                        <option value="off">Off</option>
+                        <option value="review" selected>Review</option>
+                        <option value="automatic">Automatic</option>
+                    </select>
+                </div>
+
+                <p
+                    id="chromatic-dialogue-operation-mode-help"
+                    class="chromatic-dialogue-mode-help"
+                >
+                    Off — do not process new character proposals.
+                    Review — ask for approval before registering them.
+                    Automatic — register safe proposals automatically; anything uncertain remains for manual review.
+                    This setting is saved per chat and applies to future messages.
+                    Existing assignments continue to function in every mode.
+                </p>
+
+                <p
+                    id="chromatic-dialogue-operation-mode-feedback"
+                    class="chromatic-dialogue-feedback chromatic-dialogue-mode-feedback"
+                    role="status"
+                    aria-live="polite"
+                    hidden
+                ></p>
+            </section>
+
             <div
                 id="chromatic-dialogue-no-chat"
                 class="chromatic-dialogue-state"
@@ -37,6 +88,48 @@
                 ></span>
                 <p>Open or create a chat to configure dialogue colors.</p>
             </div>
+
+            <section
+                id="chromatic-dialogue-review-section"
+                class="chromatic-dialogue-review-section"
+                aria-labelledby="chromatic-dialogue-review-heading"
+                hidden
+            >
+                <div class="chromatic-dialogue-review-header">
+                    <h3
+                        id="chromatic-dialogue-review-heading"
+                        class="chromatic-dialogue-review-title"
+                    >
+                        Pending review
+                    </h3>
+                    <span
+                        id="chromatic-dialogue-review-count"
+                        class="chromatic-dialogue-review-count"
+                        aria-label="Pending review count"
+                    >
+                        0
+                    </span>
+                </div>
+
+                <p class="chromatic-dialogue-review-description">
+                    AI-proposed new speakers waiting for your approval. Pending reviews are session-only until accepted.
+                </p>
+
+                <div
+                    id="chromatic-dialogue-review-list"
+                    class="chromatic-dialogue-review-list"
+                    role="list"
+                    aria-label="Pending character proposals"
+                ></div>
+
+                <p
+                    id="chromatic-dialogue-review-feedback"
+                    class="chromatic-dialogue-feedback chromatic-dialogue-review-feedback"
+                    role="status"
+                    aria-live="polite"
+                    hidden
+                ></p>
+            </section>
 
             <div
                 id="chromatic-dialogue-empty-state"

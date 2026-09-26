@@ -27,12 +27,45 @@ import {
     saveActiveChatState,
 } from './chat-store.js';
 import { refreshDialogueStyles } from './style-runtime.js';
+import { renderReviewPanel } from './review-panel.js';
+import {
+    subscribePendingReviewChanges,
+} from './pending-review-store.js';
+import { refreshOperationModeControl } from './mode-panel.js';
 
 const synchronizedColorPanels = new WeakSet();
 const registeredAssignmentForms = new WeakSet();
 const registeredAccessibleDrawers = new WeakSet();
 const assignmentEditorStates = new WeakMap();
 const DEFAULT_ASSIGNMENT_COLOR = '#56B4E9';
+
+let pendingReviewUnsubscribe = null;
+
+/**
+ * Ensure exactly one pending-review store subscription per panel module instance.
+ *
+ * Pending store mutations trigger dialogue style updates and panel re-rendering
+ * for the currently active chat. If registration returns null, subscription state
+ * remains unset so a subsequent panel refresh may retry.
+ *
+ * @param {typeof subscribePendingReviewChanges} [subscribeFn]
+ */
+function registerPendingReviewRefresh(
+    subscribeFn = subscribePendingReviewChanges,
+) {
+    if (pendingReviewUnsubscribe) {
+        return;
+    }
+
+    const unsubscribe = subscribeFn(() => {
+        refreshDialogueStyles();
+        refreshPanelState();
+    });
+
+    if (typeof unsubscribe === 'function') {
+        pendingReviewUnsubscribe = unsubscribe;
+    }
+}
 
 /**
  * Keep the native drawer button's expansion state synchronized once per panel.
@@ -1044,23 +1077,36 @@ function createAssignmentRow(panel, id, assignment) {
 }
 
 /**
- * Reflect the active-chat state and render its normalized assignments.
+ * Reflect the active-chat state and render its normalized assignments and pending reviews.
  *
- * The refresh itself writes no metadata. Names and other stored values are
+ * The refresh itself writes no metadata. Stored values and character names are
  * inserted through textContent rather than interpreted as HTML.
+ *
+ * @param {object} [_deps] Testing overrides
  */
-export function refreshPanelState() {
+export function refreshPanelState(_deps = {}) {
     const panel = document.getElementById(PANEL_ID);
 
     if (!panel) {
         return;
     }
 
+    registerPendingReviewRefresh(
+        _deps.subscribePendingReviewChanges ?? subscribePendingReviewChanges,
+    );
     registerColorSynchronization(panel);
     registerAssignmentForm(panel);
     registerDrawerAccessibility(panel);
 
+    const refreshModeControl =
+        _deps.refreshOperationModeControl ??
+        refreshOperationModeControl;
+    refreshModeControl(panel);
+
     const { status, chatId, state } = readActiveChatState();
+    const renderReviews = _deps.renderReviewPanel ?? renderReviewPanel;
+    renderReviews(panel, chatId);
+
     const editorState = getAssignmentEditorState(panel);
     const activeChatChanged =
         editorState.hasRenderedChat &&

@@ -1,5 +1,12 @@
 export const CHAT_METADATA_KEY = 'chromatic_dialogue';
+export const CHAT_MODE_METADATA_KEY = 'chromatic_dialogue_mode';
 export const SCHEMA_VERSION = 1;
+
+export const OPERATION_MODE_OFF = 'off';
+export const OPERATION_MODE_REVIEW = 'review';
+export const OPERATION_MODE_AUTOMATIC = 'automatic';
+
+export const DEFAULT_OPERATION_MODE = OPERATION_MODE_REVIEW;
 
 export const CHAT_CONTENT_SELECTOR = '#chat .mes_text';
 export const DIALOGUE_CLASS_PREFIX = 'custom-cd-';
@@ -35,3 +42,12 @@ export const ASSIGNMENT_CANCEL_EDIT_BUTTON_ID =
     'chromatic-dialogue-assignment-cancel-edit';
 export const ASSIGNMENT_FEEDBACK_ID =
     'chromatic-dialogue-assignment-feedback';
+
+export const REVIEW_SECTION_ID =
+    'chromatic-dialogue-review-section';
+export const REVIEW_COUNT_ID =
+    'chromatic-dialogue-review-count';
+export const REVIEW_LIST_ID =
+    'chromatic-dialogue-review-list';
+export const REVIEW_FEEDBACK_ID =
+    'chromatic-dialogue-review-feedback';

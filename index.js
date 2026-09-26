@@ -1,4 +1,7 @@
+// index.js
+import { registerMessageReceivedRuntime } from './src/message-runtime.js';
 import { ensurePanel, refreshPanelState } from './src/panel.js';
+import { registerPromptMacros } from './src/prompt-macros.js';
 import { refreshDialogueStyles } from './src/style-runtime.js';
 
 const LOG_PREFIX = '[Chromatic Dialogue]';
@@ -22,6 +25,9 @@ export function onActivate() {
     if (lifecycleRegistered) {
         return;
     }
+
+    registerPromptMacros();
+    registerMessageReceivedRuntime();
 
     const { eventSource, eventTypes } = SillyTavern.getContext();
 
