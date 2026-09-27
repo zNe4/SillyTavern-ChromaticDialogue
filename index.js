@@ -1,8 +1,8 @@
-// index.js
 import { registerMessageReceivedRuntime } from './src/message-runtime.js';
 import { ensurePanel, refreshPanelState } from './src/panel.js';
 import { registerPromptMacros } from './src/prompt-macros.js';
 import { refreshDialogueStyles } from './src/style-runtime.js';
+import { installLegacyMigrationWizardUI } from './src/legacy-migration-wizard-ui.js';
 
 const LOG_PREFIX = '[Chromatic Dialogue]';
 
@@ -72,5 +72,6 @@ async function initialize() {
  */
 async function initializeOnce() {
     await ensurePanel();
+    installLegacyMigrationWizardUI();
     refreshActiveChat();
 }

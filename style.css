@@ -621,6 +621,417 @@
 }
 
 /* ==========================================================================
+   Legacy migration wizard
+   ========================================================================== */
+
+.chromatic-dialogue-migration-wizard {
+    container-type: inline-size;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: inherit;
+    font: inherit;
+}
+
+.chromatic-dialogue-migration-wizard * {
+    box-sizing: border-box;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-header {
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+    padding-bottom: 0.75rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.25em;
+    font-weight: 700;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-subtitle {
+    margin: 0 0 0.5rem;
+    font-size: 1.05em;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-safety-note {
+    margin: 0.5rem 0 0;
+    font-size: 0.88em;
+    opacity: 0.85;
+    line-height: 1.4;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-safety-note ul {
+    margin: 0.35rem 0;
+    padding-left: 1.25rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 8px;
+    background: color-mix(
+        in srgb,
+        var(--SmartThemeBlurTintColor) 40%,
+        transparent
+    );
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-intro-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 8px;
+    background: color-mix(
+        in srgb,
+        var(--SmartThemeBlurTintColor) 30%,
+        transparent
+    );
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-stat-label {
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-stat-value {
+    font-size: 1.1em;
+    font-weight: 700;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-intro-note {
+    grid-column: 1 / -1;
+    font-size: 0.85em;
+    opacity: 0.85;
+    margin-top: 0.25rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-progress {
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-feedback {
+    padding: 0.75rem;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 8px;
+    background: color-mix(
+        in srgb,
+        var(--SmartThemeBlurTintColor) 50%,
+        transparent
+    );
+    overflow-wrap: anywhere;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-feedback[hidden] {
+    display: none !important;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-error-list {
+    margin: 0.5rem 0;
+    padding-left: 1.25rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-error-advice {
+    font-size: 0.85em;
+    opacity: 0.85;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-source-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0.75rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-source-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.75rem;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 8px;
+    background: color-mix(
+        in srgb,
+        var(--SmartThemeBlurTintColor) 40%,
+        transparent
+    );
+    overflow-wrap: anywhere;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-source-identity {
+    font-weight: 700;
+    font-size: 1em;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-source-key-detail {
+    font-weight: normal;
+    opacity: 0.75;
+    font-size: 0.9em;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-swatch {
+    display: inline-block;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 3px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    vertical-align: middle;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-adapter {
+    font-size: 0.85em;
+    opacity: 0.85;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-counts {
+    font-size: 0.85em;
+    opacity: 0.85;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-sample-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-sample-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-sample-meta {
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-sample-content,
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-before,
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-after {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+    overflow-x: auto;
+    font-family: var(--monoFontFamily, monospace);
+    font-size: 0.9em;
+    padding: 0.5rem;
+    margin: 0;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 4px;
+    background: color-mix(
+        in srgb,
+        var(--SmartThemeBlurTintColor) 70%,
+        transparent
+    );
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-non-migratable {
+    padding: 0.35rem 0.5rem;
+    border-radius: 4px;
+    background: color-mix(
+        in srgb,
+        currentColor 10%,
+        transparent
+    );
+    font-size: 0.85em;
+    font-style: italic;
+    opacity: 0.85;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-mapping-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-field-label {
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-action-select,
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-reuse-select,
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 0.4rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-skip-note {
+    font-size: 0.85em;
+    opacity: 0.85;
+    font-style: italic;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-reuse-fields,
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-create-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding-top: 0.25rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-suggestion {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.5rem;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 6px;
+    background: color-mix(
+        in srgb,
+        var(--SmartThemeBlurTintColor) 50%,
+        transparent
+    );
+    font-size: 0.85em;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-suggestion-button {
+    align-self: flex-start;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.85em;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-preview-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 8px;
+    background: color-mix(
+        in srgb,
+        var(--SmartThemeBlurTintColor) 30%,
+        transparent
+    );
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-preview-title {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 700;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-preview-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.35rem 0.75rem;
+    font-size: 0.9em;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-message-changes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-diff-details {
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 6px;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-diff-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-diff-label {
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-pagination {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-actions-footer {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-top: 1px solid var(--SmartThemeBorderColor);
+    background: color-mix(
+        in srgb,
+        var(--SmartThemeBlurTintColor) 85%,
+        transparent
+    );
+    backdrop-filter: blur(8px);
+}
+
+@container (max-width: 700px) {
+    .chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-source-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-actions-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .chromatic-dialogue-migration-wizard .chromatic-dialogue-migration-actions-footer .menu_button {
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
    Dialogue tone presentation
    ========================================================================== */
 
